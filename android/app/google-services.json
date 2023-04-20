@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "183587622641",
+    "project_id": "thebanyette",
+    "storage_bucket": "thebanyette.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:183587622641:android:483998899d6bc929f86350",
+        "android_client_info": {
+          "package_name": "com.example.the_banyette"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "183587622641-kot7mi0fanigc7qol2u136lrmbqi5rn0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC29lvrCSfaNByMgg7pBod2a8qIZOcaxUM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "183587622641-kot7mi0fanigc7qol2u136lrmbqi5rn0.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "183587622641-l1dcf6bitsqcdn6t3mbfk7nc1gta098b.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.theBanyette"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
