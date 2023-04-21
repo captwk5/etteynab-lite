@@ -46,18 +46,18 @@ class Home extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              "The",
+              "TheLaFul",
               style: TextStyle(
                 color: Color.fromARGB(255, 100, 177, 103),
-                fontSize: 40,
+                fontSize: 50,
               ),
             ),
             const Text(
-              "Banyette",
+              "STUDIO",
               style: TextStyle(
                 color: Color.fromARGB(255, 115, 211, 118),
                 fontStyle: FontStyle.normal,
-                fontSize: 50,
+                fontSize: 40,
               ),
             ),
             const SizedBox(
@@ -67,7 +67,7 @@ class Home extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 OutlinedButton.icon(
-                  label: const Text("The LaFul"),
+                  label: const Text("작품 보기"),
                   icon: const Icon(
                     Icons.image_search_outlined,
                   ),

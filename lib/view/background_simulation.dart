@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-class SimulationHome extends StatefulWidget {
-  const SimulationHome({
+class BackgroundSimulation extends StatefulWidget {
+  const BackgroundSimulation({
     super.key,
     required this.image,
   });
@@ -12,11 +12,11 @@ class SimulationHome extends StatefulWidget {
 
   @override
   // ignore: no_logic_in_create_state
-  State<StatefulWidget> createState() => SimulationHomeState(image: image);
+  State<StatefulWidget> createState() => SimulationState(image: image);
 }
 
-class SimulationHomeState extends State<SimulationHome> {
-  SimulationHomeState({required this.image});
+class SimulationState extends State<BackgroundSimulation> {
+  SimulationState({required this.image});
 
   final Image image;
 

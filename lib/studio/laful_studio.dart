@@ -1,17 +1,19 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:the_banyette/firebase/firebase_api.dart';
 import 'package:the_banyette/model/masterpiece.dart';
-import 'package:camera/camera.dart';
-import 'package:the_banyette/view/simulation_home.dart';
+import 'package:the_banyette/view/background_simulation.dart';
+
+import '../view/camera_home.dart';
 
 class LaFulStudio extends StatefulWidget {
   const LaFulStudio({super.key});
 
   @override
-  State<LaFulStudio> createState() => _ImageSimulationState();
+  State<LaFulStudio> createState() => LaFulStudioProducts();
 }
 
-class _ImageSimulationState extends State<LaFulStudio> {
+class LaFulStudioProducts extends State<LaFulStudio> {
   Future<List<MasterPiece>> imageList =
       FirebaseApiService.instance.getImageList();
   List<MasterPiece> removedBgDatas = [];
@@ -81,38 +83,14 @@ class _ImageSimulationState extends State<LaFulStudio> {
             children: [
               OutlinedButton.icon(
                 onPressed: () {
-                  // setState(() {
-                  //   getCamera().then((value) => _camera = value);
-                  // });
+                  // launchBackgroundSimulation(pageController.page!.toInt());
 
-                  MasterPiece? selectedMP;
-                  if (pageController.page != null) {
-                    String selectedTitle =
-                        pageDatas[pageController.page!.toInt()]
-                            .title
-                            .split('.')[0];
-
-                    for (var element in removedBgDatas) {
-                      if (element.title.split('_')[0] == selectedTitle) {
-                        debugPrint(selectedTitle);
-                        selectedMP = element;
-                        break;
-                      }
-                    }
-                  }
-
-                  if (selectedMP != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => SimulationHome(
-                          image: selectedMP!.image,
+                  getCamera().then((value) => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => TakePictureScreen(camera: value),
                         ),
-                      ),
-                    );
-                  } else {
-                    debugPrint("No");
-                  }
+                      ));
                 },
                 label: const Text(
                   "배경화면 촬영하고 상품 올려보기",
@@ -122,14 +100,36 @@ class _ImageSimulationState extends State<LaFulStudio> {
               ),
             ],
           ),
-          // SizedBox(
-          //   height: 300,
-          //   child: _camera != null
-          //       ? TakePictureScreen(camera: _camera!)
-          //       : const Text("Camera"),
-          // )
         ],
       ),
     );
+  }
+
+  void launchBackgroundSimulation(int pageIdx) {
+    MasterPiece? selectedMP;
+    if (pageController.page != null) {
+      String selectedTitle = pageDatas[pageIdx].title.split('.')[0];
+
+      for (var element in removedBgDatas) {
+        if (element.title.split('_')[0] == selectedTitle) {
+          debugPrint(selectedTitle);
+          selectedMP = element;
+          break;
+        }
+      }
+    }
+
+    if (selectedMP != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BackgroundSimulation(
+            image: selectedMP!.image,
+          ),
+        ),
+      );
+    } else {
+      debugPrint("No");
+    }
   }
 }
