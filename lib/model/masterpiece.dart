@@ -28,12 +28,21 @@ class MasterPiece extends StatelessWidget {
         const SizedBox(
           height: 20,
         ),
-        Text("$title : ${priceToString(price)}"),
-        const SizedBox(
-          height: 20,
+        Column(
+          children: [
+            Text("$title : ${priceToString(price)}"),
+            OutlinedButton.icon(
+              onPressed: () {},
+              label: const Text("네이버스토어로 구매하러 가기"),
+              icon: const Icon(Icons.shopping_cart),
+            )
+          ],
         ),
         const SizedBox(
-          width: 400,
+          height: 10,
+        ),
+        const SizedBox(
+          width: 300,
           child: Divider(color: Colors.green, thickness: 1.0),
         ),
       ]),

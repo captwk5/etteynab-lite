@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:the_banyette/firebase/firebase_api.dart';
 import 'package:the_banyette/model/masterpiece.dart';
 import 'package:the_banyette/view/background_simulation.dart';
@@ -7,13 +10,17 @@ import 'package:the_banyette/view/background_simulation.dart';
 import '../view/camera_home.dart';
 
 class LaFulStudio extends StatefulWidget {
-  const LaFulStudio({super.key});
+  const LaFulStudio({super.key, this.backgroundImgPath});
+
+  final String? backgroundImgPath;
 
   @override
   State<LaFulStudio> createState() => LaFulStudioProducts();
 }
 
 class LaFulStudioProducts extends State<LaFulStudio> {
+  String? backgroundImgPath;
+
   Future<List<MasterPiece>> imageList =
       FirebaseApiService.instance.getImageList();
   List<MasterPiece> removedBgDatas = [];
@@ -66,7 +73,8 @@ class LaFulStudioProducts extends State<LaFulStudio> {
                     removedBgDatas.add(element);
                   }
                 }
-                return Expanded(
+                return SizedBox(
+                  height: 450,
                   child: PageView(
                     scrollDirection: Axis.horizontal,
                     controller: pageController,
@@ -78,26 +86,55 @@ class LaFulStudioProducts extends State<LaFulStudio> {
               }
             },
           ),
+          Container(
+              child: backgroundImgPath == null
+                  ? const Text("There is no background")
+                  : Container(
+                      height: 150,
+                      width: 150,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: Image.file(File(backgroundImgPath!)).image,
+                          fit: BoxFit.cover,
+                        ),
+                      ))),
+          const SizedBox(
+            height: 20,
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               OutlinedButton.icon(
                 onPressed: () {
-                  // launchBackgroundSimulation(pageController.page!.toInt());
-
-                  getCamera().then((value) => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => TakePictureScreen(camera: value),
-                        ),
-                      ));
+                  getCamera().then((value) => getBackgroundImg(value));
                 },
                 label: const Text(
-                  "배경화면 촬영하고 상품 올려보기",
+                  "배경화면 촬영",
                   style: TextStyle(color: Color.fromARGB(255, 60, 113, 62)),
                 ),
                 icon: const Icon(Icons.camera_alt_outlined),
               ),
+              OutlinedButton.icon(
+                onPressed: () {
+                  if (backgroundImgPath == null) {
+                    Fluttertoast.showToast(
+                        msg: "상품을 올려놓을\n배경화면을 촬영해 보세요.",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.CENTER,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.red,
+                        textColor: Colors.white,
+                        fontSize: 16.0);
+                  } else {
+                    launchBackgroundSimulation(
+                      pageController.page!.toInt(),
+                      Image.file(File(backgroundImgPath!)),
+                    );
+                  }
+                },
+                label: const Text("배경화면에 올려보기"),
+                icon: const Icon(Icons.arrow_circle_down_outlined),
+              )
             ],
           ),
         ],
@@ -105,7 +142,20 @@ class LaFulStudioProducts extends State<LaFulStudio> {
     );
   }
 
-  void launchBackgroundSimulation(int pageIdx) {
+  void getBackgroundImg(CameraDescription value) async {
+    String backgroundImgPath = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TakePictureScreen(camera: value),
+      ),
+    );
+
+    setState(() {
+      this.backgroundImgPath = backgroundImgPath;
+    });
+  }
+
+  void launchBackgroundSimulation(int pageIdx, Image background) {
     MasterPiece? selectedMP;
     if (pageController.page != null) {
       String selectedTitle = pageDatas[pageIdx].title.split('.')[0];
@@ -125,11 +175,10 @@ class LaFulStudioProducts extends State<LaFulStudio> {
         MaterialPageRoute(
           builder: (_) => BackgroundSimulation(
             image: selectedMP!.image,
+            background: background,
           ),
         ),
       );
-    } else {
-      debugPrint("No");
     }
   }
 }

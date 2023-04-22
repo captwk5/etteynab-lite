@@ -33,20 +33,12 @@ class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Hello",
-          style: TextStyle(fontSize: 10),
-        ),
-        toolbarHeight: 20,
-        backgroundColor: const Color.fromARGB(255, 64, 228, 152),
-      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              "TheLaFul",
+              "LaFul",
               style: TextStyle(
                 color: Color.fromARGB(255, 100, 177, 103),
                 fontSize: 50,
@@ -55,7 +47,7 @@ class Home extends StatelessWidget {
             const Text(
               "STUDIO",
               style: TextStyle(
-                color: Color.fromARGB(255, 115, 211, 118),
+                color: Color.fromARGB(255, 100, 177, 103),
                 fontStyle: FontStyle.normal,
                 fontSize: 40,
               ),
@@ -67,7 +59,7 @@ class Home extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 OutlinedButton.icon(
-                  label: const Text("작품 보기"),
+                  label: const Text("입장 하기"),
                   icon: const Icon(
                     Icons.image_search_outlined,
                   ),

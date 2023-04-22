@@ -6,19 +6,25 @@ class BackgroundSimulation extends StatefulWidget {
   const BackgroundSimulation({
     super.key,
     required this.image,
+    required this.background,
   });
 
   final Image image;
+  final Image background;
 
   @override
   // ignore: no_logic_in_create_state
-  State<StatefulWidget> createState() => SimulationState(image: image);
+  State<StatefulWidget> createState() => SimulationState(
+        image: image,
+        backgroundImg: background,
+      );
 }
 
 class SimulationState extends State<BackgroundSimulation> {
-  SimulationState({required this.image});
+  SimulationState({required this.image, required this.backgroundImg});
 
   final Image image;
+  final Image backgroundImg;
 
   double _top = 0.0;
   double _left = 0.0;
@@ -48,9 +54,9 @@ class SimulationState extends State<BackgroundSimulation> {
           Container(
             height: 300,
             width: 400,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage("assets/background.jpg"),
+                image: backgroundImg.image,
                 fit: BoxFit.cover,
               ),
             ),
