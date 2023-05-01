@@ -39,6 +39,9 @@ dependencies:
   firebase_core: ^2.8.0
   camera: ^0.10.3+2
   fluttertoast: ^8.2.1
+  smooth_page_indicator: ^1.0.0+2
+  url_launcher: ^6.1.10
+  # google_mobile_ads: ^3.0.0
 
 dev_dependencies:
   flutter_test:

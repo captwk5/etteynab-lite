@@ -18,9 +18,7 @@ class MasterPiece extends StatelessWidget {
       child: Column(children: [
         Container(
           decoration: BoxDecoration(
-            image: DecorationImage(
-              image: image.image,
-            ),
+            image: DecorationImage(image: image.image, fit: BoxFit.fill),
           ),
           width: 300,
           height: 300,
@@ -29,19 +27,21 @@ class MasterPiece extends StatelessWidget {
           height: 20,
         ),
         Column(
-          children: [
-            Text("$title : ${priceToString(price)}"),
-            OutlinedButton.icon(
-              onPressed: () {},
-              label: const Text("네이버스토어로 구매하러 가기"),
-              icon: const Icon(Icons.shopping_cart),
-            )
+          children: const [
+            // Text("$title : ${priceToString(price)}"),
+            Text(
+              "LaFul Studio",
+              style: TextStyle(
+                fontStyle: FontStyle.italic,
+              ),
+            ),
           ],
         ),
         const SizedBox(
-          height: 10,
+          height: 20,
         ),
         const SizedBox(
+          height: 10,
           width: 300,
           child: Divider(color: Colors.green, thickness: 1.0),
         ),

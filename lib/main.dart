@@ -7,6 +7,9 @@ void main() {
   /* camera initialization */
   WidgetsFlutterBinding.ensureInitialized();
 
+  // /* google ad initialization */
+  // MobileAds.instance.initialize();
+
   runApp(const MyApp());
 }
 
@@ -33,6 +36,11 @@ class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: 40,
+        backgroundColor: const Color.fromARGB(255, 100, 177, 103),
+        title: const Text("The LaFul"),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -40,15 +48,16 @@ class Home extends StatelessWidget {
             const Text(
               "LaFul",
               style: TextStyle(
-                color: Color.fromARGB(255, 100, 177, 103),
+                color: Colors.white,
                 fontSize: 50,
+                fontStyle: FontStyle.italic,
               ),
             ),
             const Text(
               "STUDIO",
               style: TextStyle(
-                color: Color.fromARGB(255, 100, 177, 103),
-                fontStyle: FontStyle.normal,
+                color: Colors.white,
+                fontStyle: FontStyle.italic,
                 fontSize: 40,
               ),
             ),
@@ -59,7 +68,12 @@ class Home extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 OutlinedButton.icon(
-                  label: const Text("입장 하기"),
+                  label: const Text(
+                    "입장 하기",
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
                   icon: const Icon(
                     Icons.image_search_outlined,
                   ),
@@ -77,6 +91,7 @@ class Home extends StatelessWidget {
           ],
         ),
       ),
+      backgroundColor: const Color.fromARGB(255, 100, 177, 103),
     );
   }
 }

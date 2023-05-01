@@ -3,9 +3,11 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:the_banyette/firebase/firebase_api.dart';
 import 'package:the_banyette/model/masterpiece.dart';
 import 'package:the_banyette/view/background_simulation.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../view/camera_home.dart';
 
@@ -25,10 +27,11 @@ class LaFulStudioProducts extends State<LaFulStudio> {
       FirebaseApiService.instance.getImageList();
   List<MasterPiece> removedBgDatas = [];
   List<MasterPiece> pageDatas = [];
+  Future<int>? pageCnt;
 
   PageController pageController = PageController(initialPage: 0);
 
-  CameraDescription? _camera;
+  // CameraDescription? _camera;
 
   Future<CameraDescription> getCamera() async {
     // Obtain a list of the available cameras on the device.
@@ -43,22 +46,15 @@ class LaFulStudioProducts extends State<LaFulStudio> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: 40,
+        backgroundColor: const Color.fromARGB(255, 100, 177, 103),
+      ),
       resizeToAvoidBottomInset: false,
       body: Column(
         children: [
           const SizedBox(
-            height: 50,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: const Icon(Icons.arrow_back_ios_new_outlined),
-              ),
-            ],
+            height: 20,
           ),
           FutureBuilder(
             future: imageList,
@@ -73,18 +69,54 @@ class LaFulStudioProducts extends State<LaFulStudio> {
                     removedBgDatas.add(element);
                   }
                 }
+                pageCnt = getPageSize(pageDatas.length);
                 return SizedBox(
-                  height: 450,
-                  child: PageView(
+                  height: 370,
+                  child: PageView.builder(
                     scrollDirection: Axis.horizontal,
                     controller: pageController,
-                    children: pageDatas,
+                    itemCount: pageDatas.length,
+                    itemBuilder: (context, index) {
+                      return pageDatas[index];
+                    },
                   ),
                 );
               } else {
                 return const CircularProgressIndicator();
               }
             },
+          ),
+          FutureBuilder(
+            future: pageCnt,
+            builder: (builder, snapshot) {
+              if (snapshot.hasData) {
+                return SmoothPageIndicator(
+                  controller: pageController,
+                  count: snapshot.data!,
+                  effect: const WormEffect(
+                    dotHeight: 7,
+                    dotWidth: 7,
+                    type: WormType.thin,
+                  ),
+                );
+              } else {
+                return Container();
+              }
+            },
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          OutlinedButton.icon(
+            onPressed: launchURLBrowser,
+            label: const Text(
+              "구매처 가기",
+              style: TextStyle(color: Color.fromARGB(255, 60, 113, 62)),
+            ),
+            icon: const Icon(Icons.shopping_cart),
+          ),
+          const SizedBox(
+            height: 20,
           ),
           Container(
               child: backgroundImgPath == null
@@ -95,7 +127,7 @@ class LaFulStudioProducts extends State<LaFulStudio> {
                       decoration: BoxDecoration(
                         image: DecorationImage(
                           image: Image.file(File(backgroundImgPath!)).image,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.fill,
                         ),
                       ))),
           const SizedBox(
@@ -132,7 +164,10 @@ class LaFulStudioProducts extends State<LaFulStudio> {
                     );
                   }
                 },
-                label: const Text("배경화면에 올려보기"),
+                label: const Text(
+                  "배경화면에 올려보기",
+                  style: TextStyle(color: Color.fromARGB(255, 60, 113, 62)),
+                ),
                 icon: const Icon(Icons.arrow_circle_down_outlined),
               )
             ],
@@ -146,7 +181,7 @@ class LaFulStudioProducts extends State<LaFulStudio> {
     String backgroundImgPath = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => TakePictureScreen(camera: value),
+        builder: (_) => CameraHome(camera: value),
       ),
     );
 
@@ -180,5 +215,16 @@ class LaFulStudioProducts extends State<LaFulStudio> {
         ),
       );
     }
+  }
+
+  Future<void> launchURLBrowser() async {
+    Uri url = Uri.parse('https://ohou.se/productions/1247067/selling');
+    if (!await launchUrl(url)) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
+  Future<int> getPageSize(int size) {
+    return Future<int>.value(size);
   }
 }
