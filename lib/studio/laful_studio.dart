@@ -175,9 +175,9 @@ class LaFulStudioProducts extends State<LaFulStudio> {
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
-          title: const Row(
+          title: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+            children: const [
               Text("이미지 가져오기"),
             ],
           ),
