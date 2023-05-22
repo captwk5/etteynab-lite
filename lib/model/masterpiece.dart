@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
 
-class MasterPiece extends StatelessWidget {
-  const MasterPiece({
-    super.key,
-    required this.image,
-    required this.title,
-    required this.price,
-  });
+class MasterPiece extends StatefulWidget {
+  const MasterPiece(
+      {super.key,
+      required this.imageUrl,
+      required this.title,
+      required this.price,
+      required this.description});
 
-  final Image image;
+  final List<String> imageUrl;
   final String title;
   final String price;
+  final String description;
+
+  @override
+  State<MasterPiece> createState() => _MasterPieceState();
+}
+
+class _MasterPieceState extends State<MasterPiece> {
+  var selectedItemBorderColor = Colors.white;
+  var selectedItemIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +27,9 @@ class MasterPiece extends StatelessWidget {
       child: Column(children: [
         Container(
           decoration: BoxDecoration(
-            image: DecorationImage(image: image.image, fit: BoxFit.fill),
+            image: DecorationImage(
+                image: Image.network(widget.imageUrl[selectedItemIndex]).image,
+                fit: BoxFit.fill),
           ),
           width: 300,
           height: 300,
@@ -26,24 +37,73 @@ class MasterPiece extends StatelessWidget {
         const SizedBox(
           height: 20,
         ),
-        Column(
-          children: const [
-            // Text("$title : ${priceToString(price)}"),
-            Text(
-              "LaFul Studio",
-              style: TextStyle(
-                fontStyle: FontStyle.italic,
-              ),
+        SizedBox(
+          height: 40,
+          child: ListView.separated(
+            shrinkWrap: true,
+            scrollDirection: Axis.horizontal,
+            itemBuilder: (context, item) {
+              if (selectedItemIndex == item) {
+                selectedItemBorderColor = Colors.green;
+              } else {
+                selectedItemBorderColor = Colors.white;
+              }
+              return GestureDetector(
+                child: Container(
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: Image.network(widget.imageUrl[item]).image,
+                          fit: BoxFit.fill),
+                      border:
+                          Border.all(color: selectedItemBorderColor, width: 2)),
+                  width: 40,
+                  height: 40,
+                  padding: const EdgeInsets.all(10),
+                ),
+                onTap: () {
+                  setState(() {
+                    selectedItemIndex = item;
+                  });
+                },
+              );
+            },
+            separatorBuilder: (context, item) => const SizedBox(
+              width: 10,
             ),
-          ],
+            itemCount: widget.imageUrl.length,
+          ),
         ),
         const SizedBox(
           height: 20,
         ),
-        const SizedBox(
-          height: 10,
-          width: 300,
-          child: Divider(color: Colors.green, thickness: 1.0),
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Column(
+              children: [
+                Text(
+                  "${widget.description}1",
+                  style: const TextStyle(height: 3, fontSize: 30),
+                ),
+                Text(
+                  "${widget.description}2",
+                  style: const TextStyle(height: 3, fontSize: 30),
+                ),
+                Text(
+                  "${widget.description}3",
+                  style: const TextStyle(height: 3, fontSize: 30),
+                ),
+                Text(
+                  "${widget.description}4",
+                  style: const TextStyle(height: 3, fontSize: 30),
+                ),
+                Text(
+                  "${widget.description}5",
+                  style: const TextStyle(height: 3, fontSize: 30),
+                ),
+              ],
+            ),
+          ),
         ),
       ]),
     );

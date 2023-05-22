@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:the_banyette/firebase/firebase_api.dart';
-
-import 'studio/laful_studio.dart';
+import 'package:the_banyette/studio/laful_studio.dart';
 
 void main() {
-  /* camera initialization */
-  WidgetsFlutterBinding.ensureInitialized();
+  // /* camera initialization */
+  // WidgetsFlutterBinding.ensureInitialized();
 
   // /* google ad initialization */
   // MobileAds.instance.initialize();
@@ -24,8 +24,24 @@ class MyApp extends StatelessWidget {
 
     firebaseApiService.initialization();
 
-    return const MaterialApp(
-      home: Home(),
+    return MaterialApp(
+      theme: ThemeData(
+        fontFamily: GoogleFonts.quicksand().fontFamily,
+        cardColor: const Color.fromARGB(255, 100, 177, 103),
+        textTheme: const TextTheme(
+          displaySmall: TextStyle(
+            fontSize: 15,
+            color: Colors.green,
+          ),
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          titleTextStyle: TextStyle(
+            color: Colors.black,
+          ),
+        ),
+      ),
+      home: const Home(),
     );
   }
 }
@@ -36,62 +52,39 @@ class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 40,
-        backgroundColor: const Color.fromARGB(255, 100, 177, 103),
-        title: const Text("The LaFul"),
-      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              "LaFul",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 50,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-            const Text(
-              "STUDIO",
-              style: TextStyle(
-                color: Colors.white,
-                fontStyle: FontStyle.italic,
-                fontSize: 40,
-              ),
-            ),
-            const SizedBox(
-              height: 30,
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                OutlinedButton.icon(
-                  label: const Text(
-                    "입장 하기",
-                    style: TextStyle(
-                      color: Colors.white,
-                    ),
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.all(30),
+                side: const BorderSide(color: Colors.green),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(30),
                   ),
-                  icon: const Icon(
-                    Icons.image_search_outlined,
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const LaFulStudio(),
-                      ),
-                    );
-                  },
                 ),
-              ],
-            )
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const LaFulStudio(),
+                  ),
+                );
+              },
+              child: const Text(
+                " LaFul\nStudio",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 50,
+                ),
+              ),
+            ),
           ],
         ),
       ),
-      backgroundColor: const Color.fromARGB(255, 100, 177, 103),
     );
   }
 }
