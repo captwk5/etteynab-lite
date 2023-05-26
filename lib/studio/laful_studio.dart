@@ -1,23 +1,20 @@
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:the_banyette/firebase/firebase_api.dart';
 import 'package:the_banyette/model/masterpiece.dart';
+import 'package:the_banyette/view/setting_home.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LaFulStudio extends StatefulWidget {
-  const LaFulStudio({super.key, this.backgroundImgPath});
+  const LaFulStudio({super.key, required this.userName});
 
-  final String? backgroundImgPath;
+  final String userName;
 
   @override
   State<LaFulStudio> createState() => LaFulStudioProducts();
 }
 
 class LaFulStudioProducts extends State<LaFulStudio> {
-  String? backgroundImgPath;
-
-  Future<Map<String, MasterPiece>> dataMap =
-      FirebaseApiService.instance.getImageList();
+  Future<Map<String, MasterPiece>>? dataMap;
   List<MasterPiece> removedBgDatas = [];
   List<MasterPiece> pageDatas = [];
   int? pageCnt;
@@ -28,18 +25,20 @@ class LaFulStudioProducts extends State<LaFulStudio> {
 
   // CameraDescription? _camera;
 
-  Future<CameraDescription> getCamera() async {
-    // Obtain a list of the available cameras on the device.
-    final cameras = await availableCameras();
+  // Future<CameraDescription> getCamera() async {
+  //   // Obtain a list of the available cameras on the device.
+  //   final cameras = await availableCameras();
 
-    debugPrint("$cameras");
+  //   debugPrint("$cameras");
 
-    // Get a specific camera from the list of available cameras.
-    return cameras.first;
-  }
+  //   // Get a specific camera from the list of available cameras.
+  //   return cameras.first;
+  // }
 
   @override
   Widget build(BuildContext context) {
+    dataMap =
+        FirebaseApiService.instance.createMasterPieceInfo(widget.userName);
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 50,
@@ -48,24 +47,29 @@ class LaFulStudioProducts extends State<LaFulStudio> {
       resizeToAvoidBottomInset: false,
       body: Column(
         children: [
-          const SizedBox(
-            height: 20,
-          ),
+          // const SizedBox(
+          //   height: 20,
+          // ),
           FutureBuilder(
             future: dataMap,
             builder: (builder, snapshot) {
               if (snapshot.hasData) {
                 pageDatas.clear();
                 removedBgDatas.clear();
-                pageCnt = snapshot.data?.keys.length;
 
-                for (var key in snapshot.data!.keys) {
-                  if (snapshot.data?[key] != null) {
-                    pageDatas.add(snapshot.data![key]!);
+                var keyArr = snapshot.data?.keys;
+                if (keyArr != null) {
+                  for (var key in keyArr) {
+                    if (snapshot.data?[key] != null) {
+                      pageDatas.add(snapshot.data![key]!);
+                    }
                   }
+
+                  pageCnt = keyArr.length;
+
+                  pageDatas.sort((a, b) => a.idx!.compareTo(b.idx!));
                 }
 
-                debugPrint("total page : $pageCnt");
                 return Flexible(
                   flex: 1,
                   fit: FlexFit.tight,
@@ -87,20 +91,6 @@ class LaFulStudioProducts extends State<LaFulStudio> {
           ),
           const SizedBox(
             height: 10,
-          ),
-          // OutlinedButton.icon(
-          //   onPressed: () {
-          //     // getCamera().then((value) => getBackgroundImg(value));
-          //     _askedToLead();
-          //   },
-          //   label: Text(
-          //     "시뮬레이션",
-          //     style: Theme.of(context).textTheme.displaySmall,
-          //   ),
-          //   icon: const Icon(Icons.camera_alt_outlined),
-          // ),
-          const SizedBox(
-            height: 30,
           ),
           BottomNavigationBar(
             items: const <BottomNavigationBarItem>[
@@ -128,29 +118,39 @@ class LaFulStudioProducts extends State<LaFulStudio> {
   void navigateBottomTap(int idx) {
     setState(() {
       selectedNavTapIdx = idx;
+      int currentPage = pageController.page!.toInt();
 
       switch (selectedNavTapIdx) {
         case 0:
           {
-            launchURLBrowser();
+            launchURLBrowser(pageDatas[currentPage].url);
             break;
           }
         case 1:
           {
+            debugPrint(pageDatas[currentPage].removedImageUrl!.first);
             break;
           }
         case 2:
           {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const SettingHome(),
+              ),
+            );
             break;
           }
       }
     });
   }
 
-  Future<void> launchURLBrowser() async {
-    Uri url = Uri.parse('https://ohou.se/productions/1247067/selling');
-    if (!await launchUrl(url)) {
-      throw Exception('Could not launch $url');
+  Future<void> launchURLBrowser(String? storeUrl) async {
+    if (storeUrl != null) {
+      Uri url = Uri.parse(storeUrl);
+      if (!await launchUrl(url)) {
+        throw Exception('Could not launch $url');
+      }
     }
   }
 

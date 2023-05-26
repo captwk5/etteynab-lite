@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
 
+// ignore: must_be_immutable
 class MasterPiece extends StatefulWidget {
   MasterPiece({
     super.key,
     required this.imageUrl,
-    required this.title,
-    required this.price,
+    this.removedImageUrl,
+    this.idx,
+    this.title,
+    this.price,
+    this.description,
+    this.url,
   });
 
   final List<String> imageUrl;
-  final String title;
-  final String price;
-  String description = "";
-  String url = "";
+  List<String>? removedImageUrl;
+  int? idx;
+  String? title;
+  String? price;
+  String? description;
+  String? url;
 
   @override
   State<MasterPiece> createState() => _MasterPieceState();
@@ -26,6 +33,9 @@ class _MasterPieceState extends State<MasterPiece> {
   Widget build(BuildContext context) {
     return Center(
       child: Column(children: [
+        const SizedBox(
+          height: 15,
+        ),
         Container(
           decoration: BoxDecoration(
             image: DecorationImage(
@@ -36,7 +46,7 @@ class _MasterPieceState extends State<MasterPiece> {
           height: 300,
         ),
         const SizedBox(
-          height: 20,
+          height: 15,
         ),
         SizedBox(
           height: 40,
@@ -83,8 +93,8 @@ class _MasterPieceState extends State<MasterPiece> {
             child: Column(
               children: [
                 Text(
-                  "상세설명\n${widget.description}",
-                  style: const TextStyle(height: 3, fontSize: 30),
+                  "${widget.description}",
+                  style: const TextStyle(height: 2.5, fontSize: 25),
                 ),
               ],
             ),

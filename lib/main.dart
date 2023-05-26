@@ -49,6 +49,8 @@ class MyApp extends StatelessWidget {
 class Home extends StatelessWidget {
   const Home({super.key});
 
+  final String user = "amy";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,7 +72,9 @@ class Home extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const LaFulStudio(),
+                    builder: (_) => LaFulStudio(
+                      userName: user,
+                    ),
                   ),
                 );
               },

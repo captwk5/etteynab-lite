@@ -32,7 +32,7 @@ class FirebaseApiService {
     isInitialized = true;
   }
 
-  Future<Map<String, MasterPiece>> getImageList() async {
+  Future<Map<String, MasterPiece>> createMasterPieceInfo(String userId) async {
     // Display Image URL Map
     Map<String, List<String>> imageUrlMap = HashMap();
 
@@ -42,55 +42,58 @@ class FirebaseApiService {
     // MasterPiece Model Map
     Map<String, MasterPiece> dataMap = HashMap();
 
+    DatabaseReference userInfo = database.ref('users');
+
+    DatabaseEvent event = await userInfo.once();
+
     ListResult results = await storageRef.listAll();
 
-    for (var element in results.items) {
-      String imageUrl =
-          await instance.storageRef.child(element.name).getDownloadURL();
-      // imageList.add();
-      String key = element.name.split('_').first;
-      if (imageUrlMap[key] == null) {
-        imageUrlMap[key] = [];
-      }
+    for (final child in event.snapshot.children) {
+      var key = child.key;
 
-      if (!element.name.split('_').last.contains('r')) {
-        imageUrlMap[key]?.add(imageUrl);
-      } else {
-        removeImageUrlMap[key]?.add(imageUrl);
-      }
-    }
+      debugPrint('userId : $key');
 
-    for (var key in imageUrlMap.keys) {
-      dataMap[key] =
-          MasterPiece(imageUrl: imageUrlMap[key]!, title: "", price: "price");
-    }
+      if (key != null) {
+        for (var element in child.children) {
+          var data = element.value as Map;
 
-    debugPrint(dataMap['amy']?.imageUrl.length.toString());
-    debugPrint(dataMap['rowan']?.imageUrl.length.toString());
+          var id = data['id'];
+          var url = data['url'];
+          var desc = data['description'];
+          var idx = data['idx'];
 
-    DatabaseReference userInfo = database.ref('users');
-    userInfo.onValue.listen((DatabaseEvent event) {
-      for (final child in event.snapshot.children) {
-        var key = child.key;
-        if (key != null) {
-          if (key.contains("amy")) {
-            for (final child2 in child.children) {
-              var secondKey = child2.key!;
-              debugPrint(secondKey);
-              if (secondKey == "description") {
-                String desc = child2
-                    .child(secondKey)
-                    .value
-                    .toString()
-                    .replaceAll("^", "\n");
-                debugPrint(desc);
-                dataMap[key]?.description = desc;
+          for (var element in results.items) {
+            if (element.name.contains(id)) {
+              debugPrint(element.name);
+              String imageUrl = await instance.storageRef
+                  .child(element.name)
+                  .getDownloadURL();
+              if (imageUrlMap[id] == null) {
+                imageUrlMap[id] = [];
+              }
+
+              if (removeImageUrlMap[id] == null) {
+                removeImageUrlMap[id] = [];
+              }
+
+              if (!element.name.split('_').last.contains('r')) {
+                imageUrlMap[id]?.add(imageUrl);
+              } else {
+                removeImageUrlMap[id]?.add(imageUrl);
               }
             }
           }
+
+          dataMap[id] = MasterPiece(
+            idx: idx,
+            imageUrl: imageUrlMap[id]!,
+            removedImageUrl: removeImageUrlMap[id],
+            description: desc,
+            url: url,
+          );
         }
       }
-    });
+    }
 
     return dataMap;
   }
