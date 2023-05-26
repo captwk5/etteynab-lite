@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 
 class MasterPiece extends StatefulWidget {
-  const MasterPiece(
-      {super.key,
-      required this.imageUrl,
-      required this.title,
-      required this.price,
-      required this.description});
+  MasterPiece({
+    super.key,
+    required this.imageUrl,
+    required this.title,
+    required this.price,
+  });
 
   final List<String> imageUrl;
   final String title;
   final String price;
-  final String description;
+  String description = "";
+  String url = "";
 
   @override
   State<MasterPiece> createState() => _MasterPieceState();
@@ -82,23 +83,7 @@ class _MasterPieceState extends State<MasterPiece> {
             child: Column(
               children: [
                 Text(
-                  "${widget.description}1",
-                  style: const TextStyle(height: 3, fontSize: 30),
-                ),
-                Text(
-                  "${widget.description}2",
-                  style: const TextStyle(height: 3, fontSize: 30),
-                ),
-                Text(
-                  "${widget.description}3",
-                  style: const TextStyle(height: 3, fontSize: 30),
-                ),
-                Text(
-                  "${widget.description}4",
-                  style: const TextStyle(height: 3, fontSize: 30),
-                ),
-                Text(
-                  "${widget.description}5",
+                  "상세설명\n${widget.description}",
                   style: const TextStyle(height: 3, fontSize: 30),
                 ),
               ],

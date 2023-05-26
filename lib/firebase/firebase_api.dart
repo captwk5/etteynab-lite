@@ -10,6 +10,7 @@ import 'package:the_banyette/model/masterpiece.dart';
 class FirebaseApiService {
   FirebaseApiService.privateConstructor();
   late Reference storageRef;
+  late FirebaseDatabase database;
   bool isInitialized = false;
 
   static final FirebaseApiService instance =
@@ -21,13 +22,7 @@ class FirebaseApiService {
 
   Future<void> initialization() async {
     await Firebase.initializeApp();
-    FirebaseDatabase database = FirebaseDatabase.instance;
-
-    DatabaseReference userInfo = database.ref('users');
-    userInfo.onValue.listen((DatabaseEvent event) {
-      // for (final child in event.snapshot.children) {
-      // }
-    });
+    database = FirebaseDatabase.instance;
 
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -38,9 +33,15 @@ class FirebaseApiService {
   }
 
   Future<Map<String, MasterPiece>> getImageList() async {
+    // Display Image URL Map
     Map<String, List<String>> imageUrlMap = HashMap();
+
+    // Backgronud removed Image URL Map
     Map<String, List<String>> removeImageUrlMap = HashMap();
+
+    // MasterPiece Model Map
     Map<String, MasterPiece> dataMap = HashMap();
+
     ListResult results = await storageRef.listAll();
 
     for (var element in results.items) {
@@ -60,15 +61,36 @@ class FirebaseApiService {
     }
 
     for (var key in imageUrlMap.keys) {
-      dataMap[key] = MasterPiece(
-          imageUrl: imageUrlMap[key]!,
-          title: "",
-          price: "price",
-          description: "description");
+      dataMap[key] =
+          MasterPiece(imageUrl: imageUrlMap[key]!, title: "", price: "price");
     }
 
     debugPrint(dataMap['amy']?.imageUrl.length.toString());
     debugPrint(dataMap['rowan']?.imageUrl.length.toString());
+
+    DatabaseReference userInfo = database.ref('users');
+    userInfo.onValue.listen((DatabaseEvent event) {
+      for (final child in event.snapshot.children) {
+        var key = child.key;
+        if (key != null) {
+          if (key.contains("amy")) {
+            for (final child2 in child.children) {
+              var secondKey = child2.key!;
+              debugPrint(secondKey);
+              if (secondKey == "description") {
+                String desc = child2
+                    .child(secondKey)
+                    .value
+                    .toString()
+                    .replaceAll("^", "\n");
+                debugPrint(desc);
+                dataMap[key]?.description = desc;
+              }
+            }
+          }
+        }
+      }
+    });
 
     return dataMap;
   }
