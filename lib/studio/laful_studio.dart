@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:the_banyette/firebase/firebase_api.dart';
 import 'package:the_banyette/model/masterpiece.dart';
 import 'package:the_banyette/view/setting_home.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'ar_studio_ios.dart';
 
 class LaFulStudio extends StatefulWidget {
   const LaFulStudio({super.key, required this.userName});
@@ -128,6 +132,17 @@ class LaFulStudioProducts extends State<LaFulStudio> {
           }
         case 1:
           {
+            if (Platform.isIOS) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PlaneDetectionPage(
+                    imageUrl: pageDatas[currentPage].removedImageUrl!.first,
+                  ),
+                ),
+              );
+            } else if (Platform.isAndroid) {
+            } else {}
             debugPrint(pageDatas[currentPage].removedImageUrl!.first);
             break;
           }
