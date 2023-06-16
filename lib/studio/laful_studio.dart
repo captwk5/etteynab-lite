@@ -1,100 +1,164 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:the_banyette/firebase/firebase_api.dart';
 import 'package:the_banyette/model/masterpiece.dart';
+import 'package:the_banyette/studio/ar_studio_android.dart';
+import 'package:the_banyette/studio/ar_studio_ios.dart';
 import 'package:the_banyette/view/setting_home.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'ar_studio_ios.dart';
-
+// ignore: must_be_immutable
 class LaFulStudio extends StatefulWidget {
-  const LaFulStudio({super.key, required this.userName});
+  LaFulStudio({super.key, required this.userName, required this.dataMap});
 
   final String userName;
+
+  List<MasterPiece> removedBgDatas = [];
+  List<MasterPiece> pageDatas = [];
+  int? pageCnt;
+  int? selectedSubItemIdx;
+
+  bool arFlag = false;
+  bool noDataFlag = false;
+  int? removeIdx;
+
+  PageController pageController = PageController(initialPage: 0);
+
+  // int selectedNavTapIdx = 1;
+
+  final Future<Map<String, MasterPiece>>? dataMap;
 
   @override
   State<LaFulStudio> createState() => LaFulStudioProducts();
 }
 
 class LaFulStudioProducts extends State<LaFulStudio> {
-  Future<Map<String, MasterPiece>>? dataMap;
-  List<MasterPiece> removedBgDatas = [];
-  List<MasterPiece> pageDatas = [];
-  int? pageCnt;
-
-  PageController pageController = PageController(initialPage: 0);
-
-  int selectedNavTapIdx = 1;
-
-  // CameraDescription? _camera;
-
-  // Future<CameraDescription> getCamera() async {
-  //   // Obtain a list of the available cameras on the device.
-  //   final cameras = await availableCameras();
-
-  //   debugPrint("$cameras");
-
-  //   // Get a specific camera from the list of available cameras.
-  //   return cameras.first;
-  // }
+  void removeCallbackStatus() {
+    setState(() {
+      int currentPage = widget.pageController.page!.toInt();
+      var selectedIdx = widget.pageDatas[currentPage].selectedItemIndex;
+      var selectedImageNum = widget.pageDatas[currentPage].imageUrl[selectedIdx]
+          .split('.jpeg')[0]
+          .split('_')[1];
+      debugPrint("selectedIdx : $selectedIdx");
+      debugPrint("selectedImageNum : $selectedImageNum");
+      var i = 0;
+      for (final imageName in widget.pageDatas[currentPage].removedImageUrl!) {
+        var selectedRemovedImageNum = imageName.split('.png')[0].split('_')[1];
+        //   debugPrint("removeImageSize : $selectedRemovedImageNum");
+        if (selectedImageNum == selectedRemovedImageNum) {
+          debugPrint("-->removeImageSize : $selectedRemovedImageNum");
+          widget.arFlag = true;
+          widget.removeIdx = i;
+          break;
+        } else {
+          widget.arFlag = false;
+          widget.removeIdx = null;
+        }
+        i++;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    dataMap =
-        FirebaseApiService.instance.createMasterPieceInfo(widget.userName);
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         toolbarHeight: 50,
         backgroundColor: Theme.of(context).cardColor,
       ),
       resizeToAvoidBottomInset: false,
       body: Column(
         children: [
-          // const SizedBox(
-          //   height: 20,
-          // ),
           FutureBuilder(
-            future: dataMap,
+            future: widget.dataMap,
             builder: (builder, snapshot) {
               if (snapshot.hasData) {
-                pageDatas.clear();
-                removedBgDatas.clear();
+                int? dataLen = snapshot.data?.length;
 
-                var keyArr = snapshot.data?.keys;
-                if (keyArr != null) {
-                  for (var key in keyArr) {
-                    if (snapshot.data?[key] != null) {
-                      pageDatas.add(snapshot.data![key]!);
+                if (dataLen == 0) {
+                  widget.noDataFlag = true;
+                  return Flexible(
+                    fit: FlexFit.tight,
+                    child: Center(
+                      child: Text(
+                          "There is no products of [${widget.userName}].\nPlease check artist name."),
+                    ),
+                  );
+                } else {
+                  widget.noDataFlag = false;
+                  widget.pageDatas.clear();
+                  widget.removedBgDatas.clear();
+
+                  var keyArr = snapshot.data?.keys;
+                  if (keyArr != null) {
+                    for (var key in keyArr) {
+                      if (snapshot.data?[key] != null) {
+                        widget.pageDatas.add(snapshot.data![key]!);
+                      }
                     }
+
+                    widget.pageCnt = keyArr.length;
+
+                    widget.pageDatas.sort((a, b) => a.idx!.compareTo(b.idx!));
                   }
 
-                  pageCnt = keyArr.length;
-
-                  pageDatas.sort((a, b) => a.idx!.compareTo(b.idx!));
-                }
-
-                return Flexible(
-                  flex: 1,
-                  fit: FlexFit.tight,
-                  child: SizedBox(
-                    child: PageView.builder(
-                      scrollDirection: Axis.horizontal,
-                      controller: pageController,
-                      itemCount: pageCnt,
-                      itemBuilder: (context, index) {
-                        return pageDatas[index];
-                      },
+                  return Flexible(
+                    flex: 1,
+                    fit: FlexFit.tight,
+                    child: SizedBox(
+                      child: PageView.builder(
+                        scrollDirection: Axis.horizontal,
+                        controller: widget.pageController,
+                        itemCount: widget.pageCnt,
+                        itemBuilder: (context, index) {
+                          var ret = widget.pageDatas[index];
+                          ret.removeCallback = removeCallbackStatus;
+                          return ret;
+                        },
+                      ),
                     ),
+                  );
+                }
+              } else {
+                return const Flexible(
+                  fit: FlexFit.tight,
+                  child: Center(
+                    child: CircularProgressIndicator(),
                   ),
                 );
-              } else {
-                return const CircularProgressIndicator();
               }
             },
           ),
           const SizedBox(
             height: 10,
+          ),
+          widget.arFlag
+              ? const Text(
+                  "ARStudio로 이동해보세요",
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 20,
+                  ),
+                )
+              : const Text(""),
+          const SizedBox(
+            height: 10,
+          ),
+          Container(
+            decoration: const BoxDecoration(
+              border: Border(
+                  top: BorderSide(color: Colors.grey, width: 1.0)), // 라인효과
+            ),
+          ),
+          const SizedBox(
+            height: 5,
           ),
           BottomNavigationBar(
             items: const <BottomNavigationBarItem>[
@@ -111,39 +175,59 @@ class LaFulStudioProducts extends State<LaFulStudio> {
                 label: "Setting",
               ),
             ],
-            currentIndex: selectedNavTapIdx,
+            // currentIndex: widget.selectedNavTapIdx,
             onTap: navigateBottomTap,
+            selectedItemColor: Theme.of(context).cardColor,
+            unselectedItemColor: Theme.of(context).cardColor,
+            backgroundColor: Theme.of(context).shadowColor,
           ),
         ],
       ),
     );
   }
 
-  void navigateBottomTap(int idx) {
+  void navigateBottomTap(int idx) async {
     setState(() {
-      selectedNavTapIdx = idx;
-      int currentPage = pageController.page!.toInt();
-
-      switch (selectedNavTapIdx) {
+      switch (idx) {
         case 0:
           {
-            launchURLBrowser(pageDatas[currentPage].url);
+            // widget.selectedNavTapIdx = idx;
+            if (!widget.noDataFlag) {
+              int currentPage = widget.pageController.page!.toInt();
+              launchURLBrowser(widget.pageDatas[currentPage].url);
+            }
             break;
           }
         case 1:
           {
+            // widget.selectedNavTapIdx = idx;
             if (Platform.isIOS) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => PlaneDetectionPage(
-                    imageUrl: pageDatas[currentPage].removedImageUrl!.first,
+              if (widget.arFlag && widget.removeIdx != null) {
+                int currentPage = widget.pageController.page!.toInt();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PlaneDetectionPage(
+                      imageUrl: widget.pageDatas[currentPage]
+                          .removedImageUrl![widget.removeIdx!],
+                    ),
                   ),
-                ),
-              );
+                );
+              }
             } else if (Platform.isAndroid) {
+              if (widget.arFlag && widget.removeIdx != null) {
+                int currentPage = widget.pageController.page!.toInt();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => HelloWorld(
+                      imageUrl: widget.pageDatas[currentPage]
+                          .removedImageUrl![widget.removeIdx!],
+                    ),
+                  ),
+                );
+              }
             } else {}
-            debugPrint(pageDatas[currentPage].removedImageUrl!.first);
             break;
           }
         case 2:
@@ -168,92 +252,4 @@ class LaFulStudioProducts extends State<LaFulStudio> {
       }
     }
   }
-
-  // void getBackgroundImg(CameraDescription value) async {
-  //   String backgroundImgPath = await Navigator.push(
-  //     context,
-  //     MaterialPageRoute(
-  //       builder: (_) => CameraHome(camera: value),
-  //     ),
-  //   );
-
-  //   setState(() {
-  //     this.backgroundImgPath = backgroundImgPath;
-  //   });
-  // }
-
-  // void launchBackgroundSimulation(int pageIdx, Image background) {
-  //   MasterPiece? selectedMP;
-  //   if (pageController.page != null) {
-  //     String selectedTitle = pageDatas[pageIdx].title.split('.')[0];
-
-  //     for (var element in removedBgDatas) {
-  //       if (element.title.split('_')[0] == selectedTitle) {
-  //         debugPrint(selectedTitle);
-  //         selectedMP = element;
-  //         break;
-  //       }
-  //     }
-  //   }
-
-  //   if (selectedMP != null) {
-  //     Navigator.push(
-  //       context,
-  //       MaterialPageRoute(
-  //         builder: (_) => BackgroundSimulation(
-  //           image: selectedMP!.image,
-  //           background: background,
-  //         ),
-  //       ),
-  //     );
-  //   }
-  // }
-
-  // Future<void> _askedToLead() async {
-  //   switch (await showDialog<String>(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return SimpleDialog(
-  //         title: const Row(
-  //           mainAxisAlignment: MainAxisAlignment.center,
-  //           children: [
-  //             Text("이미지 가져오기"),
-  //           ],
-  //         ),
-  //         children: <Widget>[
-  //           SimpleDialogOption(
-  //             child: IconButton(
-  //               onPressed: () {
-  //                 getCamera().then((value) => getBackgroundImg(value));
-  //               },
-  //               icon: const Icon(Icons.camera_alt_outlined),
-  //             ),
-  //           ),
-  //           SimpleDialogOption(
-  //             child: IconButton(
-  //               onPressed: () {
-  //                 Navigator.push(
-  //                   context,
-  //                   MaterialPageRoute(
-  //                     builder: (_) => const AlbumHome(),
-  //                     fullscreenDialog: true,
-  //                   ),
-  //                 );
-  //               },
-  //               icon: const Icon(Icons.photo_album_outlined),
-  //             ),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   )) {
-  //     case "Department.treasury":
-  //       break;
-  //     case "Department.state":
-  //       break;
-  //     case null:
-  //       // dialog dismissed
-  //       break;
-  //   }
-  // }
 }

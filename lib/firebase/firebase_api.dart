@@ -32,7 +32,7 @@ class FirebaseApiService {
     isInitialized = true;
   }
 
-  Future<Map<String, MasterPiece>> createMasterPieceInfo(String userId) async {
+  Future<Map<String, MasterPiece>>? createMasterPieceInfo(String userId) async {
     // Display Image URL Map
     Map<String, List<String>> imageUrlMap = HashMap();
 
@@ -44,6 +44,7 @@ class FirebaseApiService {
 
     DatabaseReference userInfo = database.ref('users');
 
+    /* TODO : Set time-out */
     DatabaseEvent event = await userInfo.once();
 
     ListResult results = await storageRef.listAll();
@@ -51,9 +52,7 @@ class FirebaseApiService {
     for (final child in event.snapshot.children) {
       var key = child.key;
 
-      debugPrint('userId : $key');
-
-      if (key != null) {
+      if (key == userId) {
         for (var element in child.children) {
           var data = element.value as Map;
 
@@ -85,16 +84,16 @@ class FirebaseApiService {
           }
 
           dataMap[id] = MasterPiece(
-            idx: idx,
-            imageUrl: imageUrlMap[id]!,
-            removedImageUrl: removeImageUrlMap[id],
-            description: desc,
-            url: url,
-          );
+              idx: idx,
+              imageUrl: imageUrlMap[id]!,
+              removedImageUrl: removeImageUrlMap[id],
+              description: desc,
+              url: url);
         }
+      } else {
+        debugPrint('$userId has no database');
       }
     }
-
     return dataMap;
   }
 }

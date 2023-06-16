@@ -1,20 +1,39 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:the_banyette/firebase/firebase_api.dart';
 import 'package:the_banyette/studio/laful_studio.dart';
 
-void main() {
-  // /* camera initialization */
-  // WidgetsFlutterBinding.ensureInitialized();
+void main() async {
+  /* camera initialization */
+  WidgetsFlutterBinding.ensureInitialized();
 
   // /* google ad initialization */
   // MobileAds.instance.initialize();
 
-  runApp(const MyApp());
+  if (Platform.isAndroid) {
+    // await ArCoreController.checkArCoreAvailability();
+    // await ArCoreController.checkIsArCoreInstalled();
+    runApp(const MyApp());
+  } else {
+    runApp(const MyApp());
+  }
 }
 
+// ignore: must_be_immutable
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
+  String? loadGoogleFontStyle() {
+    String? fontStyle = "";
+    try {
+      fontStyle = GoogleFonts.quicksand().fontFamily;
+    } catch (e) {
+      debugPrint("network error ${e.toString()}");
+    }
+    return fontStyle;
+  }
 
   // This widget is the root of your application.
   @override
@@ -26,8 +45,10 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       theme: ThemeData(
-        fontFamily: GoogleFonts.quicksand().fontFamily,
+        /* TODO : Use default fontStyle when network is unavailable. */
+        fontFamily: loadGoogleFontStyle(),
         cardColor: const Color.fromARGB(255, 100, 177, 103),
+        shadowColor: const Color.fromARGB(255, 209, 235, 216),
         textTheme: const TextTheme(
           displaySmall: TextStyle(
             fontSize: 15,
@@ -41,15 +62,18 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const Home(),
+      home: Home(),
     );
   }
 }
 
+// ignore: must_be_immutable
 class Home extends StatelessWidget {
-  const Home({super.key});
+  Home({super.key});
 
   final String user = "amy";
+
+  TextEditingController artistTxtIdController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +82,23 @@ class Home extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const SizedBox(
+              height: 50,
+            ),
+            SizedBox(
+              width: 300,
+              child: TextField(
+                controller: artistTxtIdController,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search),
+                  border: OutlineInputBorder(),
+                  prefixIconColor: Colors.green,
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 50,
+            ),
             OutlinedButton(
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.all(30),
@@ -69,20 +110,23 @@ class Home extends StatelessWidget {
                 ),
               ),
               onPressed: () {
+                var searchTxt = artistTxtIdController.text;
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => LaFulStudio(
-                      userName: user,
+                      userName: searchTxt,
+                      dataMap: FirebaseApiService.instance
+                          .createMasterPieceInfo(searchTxt),
                     ),
                   ),
                 );
               },
               child: const Text(
-                " LaFul\nStudio",
+                "Artist",
                 style: TextStyle(
                   color: Colors.black,
-                  fontSize: 50,
+                  fontSize: 20,
                 ),
               ),
             ),

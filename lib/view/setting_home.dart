@@ -7,12 +7,18 @@ class SettingHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         toolbarHeight: 50,
         backgroundColor: Theme.of(context).cardColor,
       ),
       resizeToAvoidBottomInset: false,
       body: const Center(
-        child: Text("Setting"),
+        child: Text("Version 1.0.0-beta"),
       ),
     );
   }

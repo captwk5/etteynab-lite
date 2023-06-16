@@ -16,7 +16,7 @@ PODS:
     - Firebase/Database (= 10.9.0)
     - firebase_core
     - Flutter
-  - firebase_storage (11.2.0):
+  - firebase_storage (11.2.1):
     - Firebase/Storage (= 10.9.0)
     - firebase_core
     - Flutter
@@ -65,7 +65,7 @@ DEPENDENCIES:
   - firebase_storage (from `.symlinks/plugins/firebase_storage/ios`)
   - Flutter (from `Flutter`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
-  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
 SPEC REPOS:
@@ -98,7 +98,7 @@ EXTERNAL SOURCES:
   fluttertoast:
     :path: ".symlinks/plugins/fluttertoast/ios"
   path_provider_foundation:
-    :path: ".symlinks/plugins/path_provider_foundation/ios"
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
@@ -107,7 +107,7 @@ SPEC CHECKSUMS:
   Firebase: bd152f0f3d278c4060c5c71359db08ebcfd5a3e2
   firebase_core: fc68c0f9eec4e800b9418deff14a7e0a504016f3
   firebase_database: 4d3dda99ba3d7740d3d00ce163b29b5bf5d649c6
-  firebase_storage: c0d085123504c3331c6e56b6daa55ce521e9d181
+  firebase_storage: 09fe224b1ae65ffb74241f2e3e89c8ebabbaa5cb
   FirebaseAppCheckInterop: e69dde5cd51b88ee1b4339d6766b691272256f9b
   FirebaseAuthInterop: e53c08e60a02de17d1ab77c5032db8ae22d3a799
   FirebaseCore: b68d3616526ec02e4d155166bbafb8eca64af557
@@ -116,7 +116,7 @@ SPEC CHECKSUMS:
   FirebaseDatabase: 0abe52c2b687e05f76e19f94248730187f83d48a
   FirebaseStorage: 075a0c10ec43f24193018c539d65e991db65d9ef
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  fluttertoast: eb263d302cc92e04176c053d2385237e9f43fad0
+  fluttertoast: fafc4fa4d01a6a9e4f772ecd190ffa525e9e2d9c
   GoogleUtilities: 9aa0ad5a7bc171f8bae016300bfcfa3fb8425749
   GTMSessionFetcher: e8647203b65cee28c5f73d0f473d096653945e72
   leveldb-library: f03246171cce0484482ec291f88b6d563699ee06
