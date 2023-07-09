@@ -1,24 +1,10 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:the_banyette/firebase/firebase_api.dart';
 import 'package:the_banyette/studio/laful_studio.dart';
 
-void main() async {
-  /* camera initialization */
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // /* google ad initialization */
-  // MobileAds.instance.initialize();
-
-  if (Platform.isAndroid) {
-    // await ArCoreController.checkArCoreAvailability();
-    // await ArCoreController.checkIsArCoreInstalled();
-    runApp(const MyApp());
-  } else {
-    runApp(const MyApp());
-  }
+void main() {
+  runApp(const MyApp());
 }
 
 // ignore: must_be_immutable
@@ -123,10 +109,10 @@ class Home extends StatelessWidget {
                 );
               },
               child: const Text(
-                "Artist",
+                "Find Artist",
                 style: TextStyle(
                   color: Colors.black,
-                  fontSize: 20,
+                  fontSize: 15,
                 ),
               ),
             ),

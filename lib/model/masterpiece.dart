@@ -24,6 +24,7 @@ class MasterPiece extends StatefulWidget {
   int selectedIdx = 0;
 
   Function? removeCallback;
+  Function? descriptionCallback;
 
   Color selectedItemBorderColor = Colors.white;
   int selectedItemIndex = 0;
@@ -37,11 +38,17 @@ typedef SelectedImageIdxCallback = void Function(int index);
 class _MasterPieceState extends State<MasterPiece> {
   @override
   Widget build(BuildContext context) {
+    double deviceHeight = MediaQuery.of(context).size.height;
+    double imgWidthHeight = deviceHeight * 0.32; // count 1
+    double margin = deviceHeight * 0.02; // count 3
+    double subImgWidthHeight = imgWidthHeight * 0.16; // count 1
+    // ratio = 0.32 + 0.02 * 3 + 0.16 = 0.54
+    widget.descriptionCallback?.call(widget.description);
     return Center(
       child: Column(
         children: [
-          const SizedBox(
-            height: 15,
+          SizedBox(
+            height: margin,
           ),
           Container(
             decoration: BoxDecoration(
@@ -51,67 +58,59 @@ class _MasterPieceState extends State<MasterPiece> {
                           .image,
                   fit: BoxFit.fill),
             ),
-            width: 300,
-            height: 300,
-          ),
-          const SizedBox(
-            height: 15,
+            width: imgWidthHeight,
+            height: imgWidthHeight,
           ),
           SizedBox(
-            height: 40,
-            width: 300,
-            child: ListView.separated(
-              shrinkWrap: true,
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (context, item) {
-                if (widget.selectedItemIndex == item) {
-                  widget.selectedItemBorderColor = Colors.green;
-                } else {
-                  widget.selectedItemBorderColor = Colors.white;
-                }
-                return GestureDetector(
-                  child: Container(
-                    decoration: BoxDecoration(
-                        image: DecorationImage(
-                            image: Image.network(widget.imageUrl[item]).image,
-                            fit: BoxFit.fill),
-                        border: Border.all(
-                            color: widget.selectedItemBorderColor, width: 2)),
-                    width: 40,
-                    height: 40,
-                    padding: const EdgeInsets.all(10),
-                  ),
-                  onTap: () {
-                    setState(() {
-                      widget.selectedItemIndex = item;
-                      widget.removeCallback?.call();
-                    });
-                  },
-                );
-              },
-              separatorBuilder: (context, item) => const SizedBox(
-                width: 10,
+            height: margin,
+          ),
+          Container(
+            alignment: Alignment.center,
+            child: SizedBox(
+              height: subImgWidthHeight,
+              child: ListView.separated(
+                shrinkWrap: true,
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, item) {
+                  if (widget.selectedItemIndex == item) {
+                    widget.selectedItemBorderColor = Colors.green;
+                  } else {
+                    widget.selectedItemBorderColor = Colors.white;
+                  }
+                  return GestureDetector(
+                    child: Container(
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: Image.network(widget.imageUrl[item]).image,
+                              fit: BoxFit.fill),
+                          border: Border.all(
+                              color: widget.selectedItemBorderColor, width: 2)),
+                      width: subImgWidthHeight,
+                      height: subImgWidthHeight,
+                      padding: const EdgeInsets.all(10),
+                    ),
+                    onTap: () {
+                      setState(() {
+                        widget.selectedItemIndex = item;
+                        widget.removeCallback?.call();
+                      });
+                    },
+                  );
+                },
+                separatorBuilder: (context, item) => const SizedBox(
+                  width: 10,
+                ),
+                itemCount: widget.imageUrl.length,
               ),
-              itemCount: widget.imageUrl.length,
             ),
           ),
-          const SizedBox(
-            height: 20,
+          SizedBox(
+            height: margin,
           ),
-          const Text("작품설명"),
-          const SizedBox(
-            height: 20,
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Column(
-                children: [
-                  Text(
-                    "${widget.description}\n11111\n22222\n33333\n44444\n55555\n66666",
-                  ),
-                ],
-              ),
+          Container(
+            decoration: const BoxDecoration(
+              border: Border(
+                  top: BorderSide(color: Colors.green, width: 1.0)), // 라인효과
             ),
           ),
         ],

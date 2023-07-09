@@ -1,9 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:the_banyette/model/masterpiece.dart';
-import 'package:the_banyette/studio/ar_studio_android.dart';
-import 'package:the_banyette/studio/ar_studio_ios.dart';
+import 'package:the_banyette/studio/ar_studio.dart';
 import 'package:the_banyette/view/setting_home.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -33,6 +30,8 @@ class LaFulStudio extends StatefulWidget {
 }
 
 class LaFulStudioProducts extends State<LaFulStudio> {
+  String? currentDescription = "";
+
   void removeCallbackStatus() {
     setState(() {
       int currentPage = widget.pageController.page!.toInt();
@@ -58,6 +57,22 @@ class LaFulStudioProducts extends State<LaFulStudio> {
         i++;
       }
     });
+  }
+
+  void refreshDescription(String desc) {
+    Future.delayed(Duration.zero, () {
+      setState(() {
+        currentDescription = desc;
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   refreshDescription();
+    // });
   }
 
   @override
@@ -110,19 +125,19 @@ class LaFulStudioProducts extends State<LaFulStudio> {
                   }
 
                   return Flexible(
-                    flex: 1,
                     fit: FlexFit.tight,
-                    child: SizedBox(
-                      child: PageView.builder(
-                        scrollDirection: Axis.horizontal,
-                        controller: widget.pageController,
-                        itemCount: widget.pageCnt,
-                        itemBuilder: (context, index) {
-                          var ret = widget.pageDatas[index];
-                          ret.removeCallback = removeCallbackStatus;
-                          return ret;
-                        },
-                      ),
+                    child: PageView.builder(
+                      scrollDirection: Axis.horizontal,
+                      controller: widget.pageController,
+                      itemCount: widget.pageCnt,
+                      itemBuilder: (context, index) {
+                        var ret = widget.pageDatas[index];
+
+                        ret.removeCallback = removeCallbackStatus;
+                        ret.descriptionCallback = refreshDescription;
+
+                        return ret;
+                      },
                     ),
                   );
                 }
@@ -136,29 +151,18 @@ class LaFulStudioProducts extends State<LaFulStudio> {
               }
             },
           ),
-          const SizedBox(
-            height: 10,
-          ),
-          widget.arFlag
-              ? const Text(
-                  "ARStudio로 이동해보세요",
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: 20,
-                  ),
-                )
-              : const Text(""),
-          const SizedBox(
-            height: 10,
-          ),
           Container(
-            decoration: const BoxDecoration(
-              border: Border(
-                  top: BorderSide(color: Colors.grey, width: 1.0)), // 라인효과
+            color: Colors.amber,
+            height: MediaQuery.of(context).size.height * 0.31,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Text(
+                "$currentDescription\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15",
+              ),
             ),
           ),
           const SizedBox(
-            height: 5,
+            height: 15,
           ),
           BottomNavigationBar(
             items: const <BottomNavigationBarItem>[
@@ -200,34 +204,18 @@ class LaFulStudioProducts extends State<LaFulStudio> {
           }
         case 1:
           {
-            // widget.selectedNavTapIdx = idx;
-            if (Platform.isIOS) {
-              if (widget.arFlag && widget.removeIdx != null) {
-                int currentPage = widget.pageController.page!.toInt();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => PlaneDetectionPage(
-                      imageUrl: widget.pageDatas[currentPage]
-                          .removedImageUrl![widget.removeIdx!],
-                    ),
+            if (widget.arFlag && widget.removeIdx != null) {
+              int currentPage = widget.pageController.page!.toInt();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ObjectsOnPlanesWidget(
+                    imageUrl: widget.pageDatas[currentPage]
+                        .removedImageUrl![widget.removeIdx!],
                   ),
-                );
-              }
-            } else if (Platform.isAndroid) {
-              if (widget.arFlag && widget.removeIdx != null) {
-                int currentPage = widget.pageController.page!.toInt();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => HelloWorld(
-                      imageUrl: widget.pageDatas[currentPage]
-                          .removedImageUrl![widget.removeIdx!],
-                    ),
-                  ),
-                );
-              }
-            } else {}
+                ),
+              );
+            }
             break;
           }
         case 2:
