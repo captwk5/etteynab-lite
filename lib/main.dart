@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
         /* TODO : Use default fontStyle when network is unavailable. */
         fontFamily: loadGoogleFontStyle(),
         cardColor: const Color.fromARGB(255, 100, 177, 103),
-        shadowColor: const Color.fromARGB(255, 209, 235, 216),
+        shadowColor: const Color.fromARGB(255, 200, 235, 216),
         textTheme: const TextTheme(
           displaySmall: TextStyle(
             fontSize: 15,
@@ -57,8 +57,6 @@ class MyApp extends StatelessWidget {
 class Home extends StatelessWidget {
   Home({super.key});
 
-  final String user = "amy";
-
   TextEditingController artistTxtIdController = TextEditingController();
 
   @override
@@ -68,6 +66,15 @@ class Home extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const Text(
+              "Artist를 검색하고\nAR을 통해 상품 시뮬레이션을 해보세요",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.lightGreen,
+                fontWeight: FontWeight.bold
+              ),
+            ),
             const SizedBox(
               height: 50,
             ),
@@ -87,7 +94,7 @@ class Home extends StatelessWidget {
             ),
             OutlinedButton(
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.all(30),
+                padding: const EdgeInsets.all(20),
                 side: const BorderSide(color: Colors.green),
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(
@@ -97,6 +104,7 @@ class Home extends StatelessWidget {
               ),
               onPressed: () {
                 var searchTxt = artistTxtIdController.text;
+                // _navigateAndDisplaySelection(context, searchTxt);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -104,6 +112,8 @@ class Home extends StatelessWidget {
                       userName: searchTxt,
                       dataMap: FirebaseApiService.instance
                           .createMasterPieceInfo(searchTxt),
+                      noDataMap: FirebaseApiService.instance
+                          .getRandomMasterPieceInfo(),
                     ),
                   ),
                 );

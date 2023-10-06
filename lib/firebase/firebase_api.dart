@@ -1,14 +1,17 @@
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:the_banyette/firebase/firebase_options.dart';
 import 'package:the_banyette/model/masterpiece.dart';
 
 class FirebaseApiService {
   FirebaseApiService.privateConstructor();
+
   late Reference storageRef;
   late FirebaseDatabase database;
   bool isInitialized = false;
@@ -32,7 +35,21 @@ class FirebaseApiService {
     isInitialized = true;
   }
 
+  Future<void> reportMessage(String message) async {
+    DatabaseReference ref = FirebaseDatabase.instance.ref("report");
+
+    String systemTime = DateTime.now().millisecondsSinceEpoch.toString();
+
+    debugPrint(systemTime + message);
+    await ref.update({
+      systemTime: message,
+    }).whenComplete(() => debugPrint("report complete"));
+  }
+
   Future<Map<String, MasterPiece>>? createMasterPieceInfo(String userId) async {
+    // Obtain shared preferences.
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
     // Display Image URL Map
     Map<String, List<String>> imageUrlMap = HashMap();
 
@@ -49,9 +66,13 @@ class FirebaseApiService {
 
     ListResult results = await storageRef.listAll();
 
+    // prefs.clear();
+
     for (final child in event.snapshot.children) {
       var key = child.key;
 
+      debugPrint("key : $key");
+      List<String> prefList = [];
       if (key == userId) {
         for (var element in child.children) {
           var data = element.value as Map;
@@ -60,40 +81,143 @@ class FirebaseApiService {
           var url = data['url'];
           var desc = data['description'];
           var idx = data['idx'];
+          var width = data['width']; // cm
+          var height = data['height']; // cm
 
-          for (var element in results.items) {
-            if (element.name.contains(id)) {
-              debugPrint(element.name);
-              String imageUrl = await instance.storageRef
-                  .child(element.name)
-                  .getDownloadURL();
-              if (imageUrlMap[id] == null) {
-                imageUrlMap[id] = [];
-              }
+          if (!prefs.containsKey(userId + id)) {
+            for (var element in results.items) {
+              if (element.name.contains(id)) {
+                String imageUrl = await instance.storageRef
+                    .child(element.name)
+                    .getDownloadURL();
+                debugPrint(imageUrl);
+                debugPrint("id : ${element.name}");
+                prefList.add("${element.name},$imageUrl");
 
-              if (removeImageUrlMap[id] == null) {
-                removeImageUrlMap[id] = [];
-              }
+                if (imageUrlMap[id] == null) {
+                  imageUrlMap[id] = [];
+                }
 
-              if (!element.name.split('_').last.contains('r')) {
-                imageUrlMap[id]?.add(imageUrl);
-              } else {
-                removeImageUrlMap[id]?.add(imageUrl);
+                if (removeImageUrlMap[id] == null) {
+                  removeImageUrlMap[id] = [];
+                }
+
+                if (!element.name.split('_').last.contains('r')) {
+                  imageUrlMap[id]?.add(imageUrl);
+                } else {
+                  removeImageUrlMap[id]?.add(imageUrl);
+                }
               }
             }
+            prefs.setStringList(userId + id, prefList);
+          } else {
+            prefs.getStringList(userId + id)?.forEach((url) {
+              var element = url.split(',').first;
+              var imageUrl = url.split(',').last;
+
+              debugPrint("$element == $imageUrl");
+              if (element.contains(id)) {
+                if (imageUrlMap[id] == null) {
+                  imageUrlMap[id] = [];
+                }
+
+                if (removeImageUrlMap[id] == null) {
+                  removeImageUrlMap[id] = [];
+                }
+
+                if (!element.split('_').last.contains('r')) {
+                  imageUrlMap[id]?.add(imageUrl);
+                } else {
+                  removeImageUrlMap[id]?.add(imageUrl);
+                }
+              }
+            });
           }
 
           dataMap[id] = MasterPiece(
-              idx: idx,
-              imageUrl: imageUrlMap[id]!,
-              removedImageUrl: removeImageUrlMap[id],
-              description: desc,
-              url: url);
+            idx: idx,
+            imageUrl: imageUrlMap[id]!,
+            removedImageUrl: removeImageUrlMap[id],
+            description: desc,
+            url: url,
+            width: width,
+            height: height,
+          );
         }
       } else {
-        debugPrint('$userId has no database');
+        debugPrint('$key has no database');
       }
     }
+    return dataMap;
+  }
+
+  Future<Map<String, MasterPiece>>? getRandomMasterPieceInfo() async {
+    Map<String, MasterPiece> dataMap = HashMap();
+
+    // Display Image URL Map
+    Map<String, List<String>> imageUrlMap = HashMap();
+
+    // Backgronud removed Image URL Map
+    Map<String, List<String>> removeImageUrlMap = HashMap();
+
+    DatabaseReference userInfo = database.ref('users');
+
+    DatabaseEvent event = await userInfo.once();
+
+    ListResult results = await storageRef.listAll();
+
+    var randomIdx1 = Random()
+        .nextInt(event.snapshot.children.length); // Value is >= 0 and < 10.
+    var checkIdx1 = 0;
+    for (final child in event.snapshot.children) {
+      if (checkIdx1 == randomIdx1) {
+        var key = child.key;
+        var randomIdx2 =
+            Random().nextInt(child.children.length); // Value is >= 0 and < 10.
+        int checkIdx2 = 0;
+        for (var element in child.children) {
+          if (checkIdx2 == randomIdx2) {
+            var data = element.value as Map;
+
+            var id = data['id'];
+            var url = data['url'];
+            var desc = data['description'];
+            var idx = data['idx'];
+            var width = data['width']; // cm
+            var height = data['height']; // cm
+
+            for (var element in results.items) {
+              if (element.name.contains(id) && !element.name.contains("_r")) {
+                String imageUrl = await instance.storageRef
+                    .child(element.name)
+                    .getDownloadURL();
+
+                imageUrlMap[id] = [];
+                removeImageUrlMap[id] = [];
+                imageUrlMap[id]?.add(imageUrl);
+                removeImageUrlMap[id]?.add(imageUrl);
+
+                dataMap[id] = MasterPiece(
+                  idx: idx,
+                  imageUrl: imageUrlMap[id]!,
+                  removedImageUrl: removeImageUrlMap[id],
+                  description: desc,
+                  url: url,
+                  width: width,
+                  height: height,
+                  title: key,
+                );
+                break;
+              }
+            }
+          }
+          checkIdx2++;
+        }
+        break;
+      }
+      checkIdx1++;
+    }
+
     return dataMap;
   }
 }

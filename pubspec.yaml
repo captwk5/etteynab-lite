@@ -39,11 +39,15 @@ dependencies:
   firebase_core: ^1.10.0
   firebase_database: ^9.0.0
   firebase_core_platform_interface: 4.5.1
-  fluttertoast: ^8.2.1
+  fluttertoast: ^8.2.2
   url_launcher: ^6.1.10
   google_fonts: ^4.0.4
   vector_math: ^2.1.4
   ar_flutter_plugin: ^0.7.3
+  arcore_flutter_plugin: ^0.1.0
+  arkit_plugin: ^1.0.6
+  smooth_page_indicator: ^1.1.0
+  shared_preferences: ^2.2.0
 
 dev_dependencies:
   flutter_test:
@@ -67,9 +71,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/ios_plane_background.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
