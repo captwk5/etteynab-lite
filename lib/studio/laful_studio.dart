@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:the_banyette/firebase/firebase_api.dart';
 import 'package:the_banyette/model/masterpiece.dart';
@@ -17,7 +17,7 @@ class LaFulStudio extends StatefulWidget {
     super.key,
     required this.userName,
     required this.dataMap,
-    this.noDataMap,
+    required this.noDataMap,
   });
 
   final String userName;
@@ -62,12 +62,19 @@ class LaFulStudioProducts extends State<LaFulStudio> {
   void refreshDescription(String desc) {
     Future.delayed(Duration.zero, () {
       setState(() {
+        debugPrint("$desc");
         var descList = desc.split(",");
         currentDescription = "\n"
-            "- 높이 : ${descList.first}cm"
+            "- 상품명 : ${descList.first}"
             "\n"
             "\n"
-            "- 넓이 : ${descList.last}cm";
+            "- 높이 : ${descList[1]}cm"
+            "\n"
+            "\n"
+            "- 넓이 : ${descList[2]}cm"
+            "\n"
+            "\n"
+            "- 설명 : ${descList.last}";
         // currentDescription = desc;
       });
     });
@@ -83,14 +90,14 @@ class LaFulStudioProducts extends State<LaFulStudio> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "[${widget.userName}]님의 작품",
+          "\"${widget.userName}\"님의 상품",
           style: TextStyle(
             color: Theme.of(context).cardColor,
             fontSize: 16,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
+          icon: const Icon(Icons.search),
           onPressed: () {
             Navigator.pop(context, null);
           },
@@ -131,7 +138,8 @@ class LaFulStudioProducts extends State<LaFulStudio> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                                "There is no products of [${widget.userName}].\nPlease check artist name."),
+                                "\"${widget.userName}\"님 상품이 없습니다."),
+                            const Text("판매자 이름을 확인하세요."),
                             const SizedBox(
                               height: 15,
                             ),
@@ -165,7 +173,7 @@ class LaFulStudioProducts extends State<LaFulStudio> {
                                           height: 15,
                                         ),
                                         Text(
-                                            "[${masterPiece.title!}]님의 상품은 어떤 가요?"),
+                                            "\"${masterPiece.title!}\"님의 상품은 어떤 가요?"),
                                         const Text("이미지 클릭하고 구경해보세요"),
                                       ],
                                     );
@@ -261,13 +269,13 @@ class LaFulStudioProducts extends State<LaFulStudio> {
                             const Text(
                               "\n< 상세 스펙 >",
                               style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 15,
-                                fontStyle: FontStyle.normal
-                              ),
+                                  color: Colors.black,
+                                  fontSize: 15,
+                                  fontStyle: FontStyle.normal),
                             ),
                             Text(
                               currentDescription,
+                              style: const TextStyle(fontSize: 14),
                             ),
                           ],
                         ),
@@ -321,8 +329,8 @@ class LaFulStudioProducts extends State<LaFulStudio> {
                               child: const Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: <Widget>[
-                                  Icon(Icons.search_outlined), // icon
-                                  Text("Search"), // text
+                                  Icon(Icons.next_plan_outlined), // icon
+                                  Text("Next"), // text
                                 ],
                               ),
                             ),
@@ -378,21 +386,13 @@ class LaFulStudioProducts extends State<LaFulStudio> {
   void navigateBottomTap(int idx) async {
     setState(() {
       switch (idx) {
-        // case 0:
-        //   {
-        //     if (!widget.noDataFlag) {
-        //       int currentPage = widget.pageController.page!.toInt();
-        //       launchURLBrowser(widget.pageDatas[currentPage].url);
-        //     }
-        //     break;
-        //   }
         case 1:
           {
             int currentPage = widget.pageController.page!.toInt();
             if (Platform.isAndroid) {
               String path = "";
               for (var element
-              in widget.pageDatas[currentPage].removedImageUrl!) {
+                  in widget.pageDatas[currentPage].removedImageUrl!) {
                 if (element.contains("png")) {
                   path = element;
                 }
@@ -429,7 +429,11 @@ class LaFulStudioProducts extends State<LaFulStudio> {
             break;
           }
         case 2:
-          Navigator.pop(context, null);
+          // Navigator.pop(context, null);
+          var idList =
+              FirebaseApiService.instance.getNextIdList(widget.userName);
+          idList
+              ?.then((value) => refresh(value[Random().nextInt(value.length)]));
           break;
       }
     });

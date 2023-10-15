@@ -67,7 +67,7 @@ class Home extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              "Artist를 검색하고\nAR을 통해 상품 시뮬레이션을 해보세요",
+              "판매자를 검색하고\nAR을 통해 상품 시뮬레이션을 해보세요",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 15,
@@ -76,7 +76,7 @@ class Home extends StatelessWidget {
               ),
             ),
             const SizedBox(
-              height: 50,
+              height: 30,
             ),
             SizedBox(
               width: 300,
@@ -90,7 +90,7 @@ class Home extends StatelessWidget {
               ),
             ),
             const SizedBox(
-              height: 50,
+              height: 30,
             ),
             OutlinedButton(
               style: OutlinedButton.styleFrom(

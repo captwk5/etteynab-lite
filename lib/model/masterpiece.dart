@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:the_banyette/view/click_view.dart';
@@ -50,11 +49,11 @@ class _MasterPieceState extends State<MasterPiece> {
     double deviceHeight = MediaQuery.of(context).size.height;
     double imgHeight = deviceHeight * 0.32; // count 1
     double imgWidth = 0;
-    double margin = deviceHeight * 0.02; // count 3
+    double margin = deviceHeight * 0.025; // count 3
     double subImgWidthHeight = imgHeight * 0.16; // count 1
     // ratio = 0.32 + 0.02 * 3 + 0.16 = 0.54
     // widget.descriptionCallback?.call(widget.description);
-    widget.descriptionCallback?.call("${widget.height},${widget.width}");
+    widget.descriptionCallback?.call("${widget.title},${widget.height},${widget.width},${widget.description}");
 
     Image currentImage = Image.network(widget.imageUrl[widget.selectedItemIndex]);
     currentImage.image

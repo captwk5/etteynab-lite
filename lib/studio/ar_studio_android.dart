@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:arcore_flutter_plugin/arcore_flutter_plugin.dart';
 import 'package:flutter/services.dart';
@@ -24,15 +26,28 @@ class ARStudioAndroid extends StatefulWidget {
 
 class _PlaneDetectionState extends State<ARStudioAndroid> {
   late ArCoreController arCoreController;
-  bool planeToggle = true;
+  bool planeToggle = false;
   ArCoreNode? nodeFlower;
   String noticeTxt1 = "화면을 터치하여 상품이 나타나면 위치를 조절해보세요.";
   var txtColor = Colors.white;
 
   math.Vector3? currentCoord;
   List<double>? currentAngle;
+  List<double>? cameraCoord;
 
   bool detectedFlag = false;
+  bool planeDetected = false;
+
+  double distance = 0.0;
+  double directionX = 0.0;
+  double directionZ = 0.0;
+  double slope = 0.0;
+  double slopeV = 0.0;
+  double prevDy = 0.0;
+  double prevDx = 0.0;
+
+  double positioned = 0.0;
+  bool ppFlag = false;
 
   @override
   void initState() {
@@ -68,11 +83,46 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
         body: Stack(
           alignment: Alignment.center,
           children: [
-            ArCoreView(
-              enableTapRecognizer: true,
-              enableUpdateListener: true,
-              enablePlaneRenderer: planeToggle,
-              onArCoreViewCreated: _onArCoreViewCreated,
+            GestureDetector(
+              child: ArCoreView(
+                enableTapRecognizer: true,
+                enableUpdateListener: true,
+                enablePlaneRenderer: false,
+                onArCoreViewCreated: _onArCoreViewCreated,
+              ),
+              onVerticalDragUpdate: (drag) => {
+                objDragUpDown(drag)
+              },
+              onHorizontalDragUpdate: (drag) => {
+                objDragRightLeft(drag)
+              },
+            ),
+            Positioned.fill(
+              bottom: positioned,
+              child: Container(
+                color: Colors.black.withOpacity(0.5),
+                child: const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.switch_camera_outlined,
+                      size: 100,
+                      color: Colors.white,
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Text(
+                      "평면을 향하고 카메라가 평면을 인식하도록\n디바이스를 조금 움직여 주세요.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.white,
+                      ),
+                    )
+                  ],
+                ),
+              ),
             ),
             Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -87,40 +137,9 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
                       child: Text(
                         noticeTxt1,
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: txtColor, fontSize: 17),
+                        style: const TextStyle(color: Colors.black, fontSize: 17),
                       ),
                     ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        if (detectedFlag) {
-                          currentCoord!.y += 0.025;
-                        }
-                      },
-                      padding: EdgeInsets.zero,
-                      icon: const Icon(
-                        Icons.arrow_upward_outlined,
-                        size: 35,
-                      ),
-                      color: Colors.white,
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        if (detectedFlag) {
-                          currentCoord!.y -= 0.025;
-                        }
-                      },
-                      padding: EdgeInsets.zero,
-                      icon: const Icon(
-                        Icons.arrow_downward_outlined,
-                        size: 35,
-                      ),
-                      color: Colors.white,
-                    )
                   ],
                 ),
                 Column(
@@ -128,108 +147,60 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        IconButton(
+                        ElevatedButton.icon(
                           onPressed: () {
                             if (detectedFlag) {
-                              var slopeAngle =
-                                  (90 + -currentAngle![1] * 180 / 3.14) *
-                                      math.pi /
-                                      180.0;
-                              var a = -1 / math.tan(slopeAngle);
-                              var x = currentCoord!.x;
-                              var y = -currentCoord!.z;
-                              var b = y - a * x;
-                              // y = a x + b
-                              // x = (y - b) / a
-                              currentCoord!.x -= 0.05;
-                              currentCoord!.z = -(a * currentCoord!.x + b);
-                            }
-                          },
-                          padding: EdgeInsets.zero,
-                          icon: const Icon(
-                            Icons.arrow_circle_left_outlined,
-                            size: 35,
-                          ),
-                          color: Colors.white,
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            if (detectedFlag) {
-                              var slopeAngle =
-                                  (90 + -currentAngle![1] * 180 / 3.14) *
-                                      math.pi /
-                                      180.0;
-                              var a = math.tan(slopeAngle);
-                              var x = currentCoord!.x;
-                              var y = -currentCoord!.z;
-                              var b = y - a * x;
-                              // y = a x + b
-                              // x = (y - b) / a
-                              currentCoord!.z -= 0.05;
-                              currentCoord!.x = (-currentCoord!.z - b) / a;
+                              objPushPull("push");
                             }
                           },
                           icon: const Icon(
                             Icons.arrow_circle_up_outlined,
-                            size: 35,
+                            size: 25,
                           ),
-                          color: Colors.white,
+                          // color: Colors.white,
+                          label: const Text(
+                            "조금 더 앞으로",
+                            style: TextStyle(color: Colors.black),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.greenAccent),
                         ),
-                        IconButton(
+                        ElevatedButton(
                           onPressed: () {
                             if (detectedFlag) {
-                              var slopeAngle =
-                                  (90 + -currentAngle![1] * 180 / 3.14) *
-                                      math.pi /
-                                      180.0;
-                              var a = math.tan(slopeAngle);
-                              var x = currentCoord!.x;
-                              var y = -currentCoord!.z;
-                              var b = y - a * x;
-                              // y = a x + b
-                              // x = (y - b) / a
-                              currentCoord!.z += 0.05;
-                              currentCoord!.x = (-currentCoord!.z - b) / a;
+                              objPushPull("pull");
                             }
                           },
-                          icon: const Icon(
-                            Icons.arrow_circle_down_outlined,
-                            size: 35,
-                          ),
-                          color: Colors.white,
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            if (detectedFlag) {
-                              var slopeAngle =
-                                  (90 + -currentAngle![1] * 180 / 3.14) *
-                                      math.pi /
-                                      180.0;
-                              var a = -1 / math.tan(slopeAngle);
-                              var x = currentCoord!.x;
-                              var y = -currentCoord!.z;
-                              var b = y - a * x;
-                              // y = a x + b
-                              // x = (y - b) / a
-                              currentCoord!.x += 0.05;
-                              currentCoord!.z = -(a * currentCoord!.x + b);
-                            }
-                          },
-                          icon: const Icon(
-                            Icons.arrow_circle_right_outlined,
-                            size: 35,
-                          ),
-                          color: Colors.white,
+                          // color: Colors.white,
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.greenAccent),
+                          child: const Row(children: [
+                            Text(
+                              "조금 더 나한테",
+                              style: TextStyle(color: Colors.black),
+                            ),
+                            SizedBox(
+                              width: 5,
+                            ),
+                            Icon(
+                              Icons.arrow_circle_down_outlined,
+                              size: 25,
+                            ),
+                          ]),
                         ),
                       ],
                     ),
-                    ElevatedButton(
+                    ElevatedButton.icon(
+                      icon: const Icon(
+                        Icons.refresh,
+                        size: 20,
+                      ),
                       onPressed: () {
                         refresh();
                       },
-                      child: const Text(
-                        "ARStudio 재시작",
-                      ),
+                      label: const Text("상품 다시 놓기"),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green),
                     ),
                   ],
                 )
@@ -252,8 +223,7 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
       context,
       MaterialPageRoute(
         builder: (_) => ARStudioAndroid(
-          imageUrl:
-          widget.imageUrl,
+          imageUrl: widget.imageUrl,
           width: widget.width,
           height: widget.height,
         ),
@@ -267,18 +237,21 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
     arCoreController.onPlaneDetected = (plane) => onPlaneDetected(plane);
   }
 
-  bool test = false;
   void onPlaneDetected(ArCorePlane p) async {
-    if(!test){
+    if (!planeDetected) {
       Fluttertoast.showToast(
-          msg: "평면.",
+          msg: "터치해서 상품을 올려보세요.",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
           timeInSecForIosWeb: 1,
           // backgroundColor: Colors.red,
           // textColor: Colors.white,
           fontSize: 10.0);
-      test = true;
+      planeDetected = true;
+      setState(() {
+        positioned = 10000;
+        txtColor = Colors.transparent;
+      });
     }
     if (detectedFlag) {
       await arCoreController.getCameraPose().then((value) => rotate(value));
@@ -286,13 +259,41 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
   }
 
   void rotate(dynamic value) {
-    var rot = value["rotation"];
+    var rot = value["rotation"]; // translation & rotation
+    cameraCoord = value["translation"];
+    if (currentCoord != null) {
+      distance = math.sqrt(
+          math.pow(currentCoord!.x - cameraCoord![0], 2) +
+              math.pow(currentCoord!.y - cameraCoord![1], 2) +
+              math.pow(currentCoord!.z - cameraCoord![2], 2));
+      // debugPrint("rowan ${distance}");
+      directionX = currentCoord!.x - cameraCoord![0];
+      directionZ = currentCoord!.z - cameraCoord![2];
+      slope = math.atan(directionZ / directionX);
+      slopeV = math.atan(-1.0 / (directionZ / directionX));
+
+      if(!ppFlag){
+        ppFlag = true;
+        // // debugPrint("rowan ${distance}");
+        // if(distance > 1.5){
+        //   objPushPull2("pull");
+        // }else if(distance < 1.5){
+        //   objPushPull2("push");
+        // }
+      }
+    }
+
     var origin = nodeFlower?.rotation?.value;
+    // var eulerCamera = toEulerAngles(rot![0], rot![1], rot![2], rot![3]);
+    // var eulerOrigin = toEulerAngles(origin!.x, origin.y, origin.z, origin.w);
+    // var quat = eulerToQuaternion(euler["roll"]!, -euler["pitch"]! * 2, euler["yaw"]!);
     nodeFlower?.rotation?.value =
+        // math.Vector4(quat[0], quat[1], quat[2], quat[3]);
         math.Vector4(origin!.x, -rot[1], origin.z, origin.w);
 
     arCoreController.handleRotationChanged(nodeFlower!);
     currentAngle = rot;
+    // debugPrint("rowan ${euler["pitch"]! * 2 * 180 / math.pi}");
 
     if (currentCoord != null) {
       nodeFlower?.position?.value =
@@ -301,13 +302,169 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
     }
   }
 
+  // Map<String, double> toEulerAngles(double x, double y, double z, double w) {
+  //   double t0 = 2.0 * (w * x + y * z);
+  //   double t1 = 1.0 - 2.0 * (x * x + y * y);
+  //   double roll = atan2(t0, t1);
+  //
+  //   double t2 = 2.0 * (w * y - z * x);
+  //   t2 = t2 > 1.0 ? 1.0 : t2;
+  //   t2 = t2 < -1.0 ? -1.0 : t2;
+  //   double pitch = asin(t2);
+  //
+  //   double t3 = 2.0 * (w * z + x * y);
+  //   double t4 = 1.0 - 2.0 * (y * y + z * z);
+  //   double yaw = atan2(t3, t4);
+  //
+  //   return {'roll': roll, 'pitch': pitch, 'yaw': yaw};
+  // }
+  //
+  // List<double> eulerToQuaternion(double roll, double pitch, double yaw) {
+  //   double cy = cos(yaw * 0.5);
+  //   double sy = sin(yaw * 0.5);
+  //   double cp = cos(pitch * 0.5);
+  //   double sp = sin(pitch * 0.5);
+  //   double cr = cos(roll * 0.5);
+  //   double sr = sin(roll * 0.5);
+  //
+  //   double w = cr * cp * cy + sr * sp * sy;
+  //   double x = sr * cp * cy - cr * sp * sy;
+  //   double y = cr * sp * cy + sr * cp * sy;
+  //   double z = cr * cp * sy - sr * sp * cy;
+  //
+  //   return [x, y, z, w];
+  // }
+
+  void objDragUpDown(DragUpdateDetails drag){
+    if(detectedFlag){
+      if(prevDy != 0.0){
+        if(drag.globalPosition.dy - prevDy < 0){
+          currentCoord!.y += 0.005;
+        }else{
+          currentCoord!.y -= 0.005;
+        }
+      }
+
+      prevDy = drag.globalPosition.dy;
+    }
+  }
+
+  void objDragRightLeft(DragUpdateDetails drag){
+    if(detectedFlag){
+      if(prevDx != 0.0){
+        if(directionZ < 0){
+          if(drag.globalPosition.dx - prevDx < 0){
+            currentCoord!.x -= 0.005 * math.cos(slopeV);
+            currentCoord!.z -= 0.005 * math.sin(slopeV);
+          }else{
+            currentCoord!.x += 0.005 * math.cos(slopeV);
+            currentCoord!.z += 0.005 * math.sin(slopeV);
+          }
+        }else{
+          if(drag.globalPosition.dx - prevDx < 0){
+            currentCoord!.x += 0.005 * math.cos(slopeV);
+            currentCoord!.z += 0.005 * math.sin(slopeV);
+          }else{
+            currentCoord!.x -= 0.005 * math.cos(slopeV);
+            currentCoord!.z -= 0.005 * math.sin(slopeV);
+          }
+        }
+      }
+      prevDx = drag.globalPosition.dx;
+    }
+  }
+
+  void objPushPull(String pp){
+    if(pp == "push"){
+      currentCoord!.x -= 0.05 * math.cos(slope);
+      currentCoord!.z -= 0.05 * math.sin(slope);
+      var calDistance = math.sqrt(
+          math.pow(currentCoord!.x - cameraCoord![0], 2) +
+              math.pow(currentCoord!.y - cameraCoord![1], 2) +
+              math.pow(currentCoord!.z - cameraCoord![2], 2));
+      if(calDistance < distance){
+        currentCoord!.x += 0.1 * math.cos(slope);
+        currentCoord!.z += 0.1 * math.sin(slope);
+      }
+    }else{
+      currentCoord!.x += 0.05 * math.cos(slope);
+      currentCoord!.z += 0.05 * math.sin(slope);
+      var calDistance = math.sqrt(
+          math.pow(currentCoord!.x - cameraCoord![0], 2) +
+              math.pow(currentCoord!.y - cameraCoord![1], 2) +
+              math.pow(currentCoord!.z - cameraCoord![2], 2));
+      if(calDistance > distance){
+        currentCoord!.x -= 0.1 * math.cos(slope);
+        currentCoord!.z -= 0.1 * math.sin(slope);
+      }
+    }
+  }
+
+  void objPushPull2(String pp){
+    var calDistance = 0.0;
+    var pm = 1;
+    if(pp == "push"){
+      for (var i = 0; i < 1000; i++){
+        // currentCoord!.x -= 0.05 * math.cos(slope);
+        // currentCoord!.z -= 0.05 * math.sin(slope);
+        //
+        // var calDistance = math.sqrt(
+        //     math.pow(currentCoord!.x - cameraCoord![0], 2) +
+        //         math.pow(currentCoord!.y - cameraCoord![1], 2) +
+        //         math.pow(currentCoord!.z - cameraCoord![2], 2));
+        // if(calDistance > 1){
+        //   break;
+        // }
+        currentCoord!.x -= 0.1 * pm * math.cos(slope);
+        currentCoord!.z -= 0.1 * pm * math.sin(slope);
+        calDistance = math.sqrt(
+            math.pow(currentCoord!.x - cameraCoord![0], 2) +
+                math.pow(currentCoord!.y - cameraCoord![1], 2) +
+                math.pow(currentCoord!.z - cameraCoord![2], 2));
+        if(calDistance < distance){
+          pm *= -1;
+        }
+        if(calDistance > 1.5) {
+          debugPrint("rowan ${calDistance} hihi");
+          break;
+        }
+      }
+    }else{
+      for (var i = 0; i < 1000; i++){
+        // currentCoord!.x += 0.05 * math.cos(slope);
+        // currentCoord!.z += 0.05 * math.sin(slope);
+        //
+        // var calDistance = math.sqrt(
+        //     math.pow(currentCoord!.x - cameraCoord![0], 2) +
+        //         math.pow(currentCoord!.y - cameraCoord![1], 2) +
+        //         math.pow(currentCoord!.z - cameraCoord![2], 2));
+        // if(calDistance < 1){
+        //   break;
+        // }
+        currentCoord!.x += 0.1 * pm * math.cos(slope);
+        currentCoord!.z += 0.1 * pm * math.sin(slope);
+        calDistance = math.sqrt(
+            math.pow(currentCoord!.x - cameraCoord![0], 2) +
+                math.pow(currentCoord!.y - cameraCoord![1], 2) +
+                math.pow(currentCoord!.z - cameraCoord![2], 2));
+        if(calDistance > distance){
+          pm *= -1;
+        }
+        if(calDistance < 1.5) {
+          debugPrint("rowan ${calDistance} hihi");
+          break;
+        }
+      }
+    }
+  }
+
   void onPlaneTap(List<ArCoreHitTestResult> hit) async {
     try {
-      if (hit.isNotEmpty) {
+      if (hit.isNotEmpty && planeDetected) {
         if (!detectedFlag) {
           detectedFlag = true;
-          planeToggle = false;
-          arCoreController.togglePlaneRenderer();
+          // planeToggle = false;
+          // arCoreController.togglePlaneRenderer();
           Fluttertoast.showToast(
               msg: "Detected!!",
               toastLength: Toast.LENGTH_SHORT,
@@ -318,6 +475,7 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
               fontSize: 10.0);
 
           var detectedPose = hit.first.pose.translation;
+          // var detectedPose = math.Vector3(0.0, 0.0, -0.5);
           var detectedRot = hit.first.pose.rotation;
           currentCoord = detectedPose;
           Uint8List bytes =

@@ -68,6 +68,24 @@ class FirebaseApiService {
 
     // prefs.clear();
 
+    for (final child in event.snapshot.children){
+      for (var element in child.children){
+        if(element.key == "same_name"){
+          List<dynamic> nameList = element.value as List;
+          for (var id in nameList) {
+            if(id == userId){
+              if(child.key != null){
+                // debugPrint("rowan $id ${child.key}");
+                userId = child.key!;
+                break;
+              }
+            }
+          }
+          // debugPrint("rowan ${element.value as List} ${nameList}");
+        }
+      }
+    }
+
     for (final child in event.snapshot.children) {
       var key = child.key;
 
@@ -75,6 +93,8 @@ class FirebaseApiService {
       List<String> prefList = [];
       if (key == userId) {
         for (var element in child.children) {
+          if(element.key == "same_name") continue;
+
           var data = element.value as Map;
 
           var id = data['id'];
@@ -142,6 +162,7 @@ class FirebaseApiService {
             url: url,
             width: width,
             height: height,
+            title: element.key,
           );
         }
       } else {
@@ -173,9 +194,10 @@ class FirebaseApiService {
       if (checkIdx1 == randomIdx1) {
         var key = child.key;
         var randomIdx2 =
-            Random().nextInt(child.children.length); // Value is >= 0 and < 10.
+            Random().nextInt(child.children.length - 1); // Value is >= 0 and < 10.
         int checkIdx2 = 0;
         for (var element in child.children) {
+          if(element.key == "same_name") continue;
           if (checkIdx2 == randomIdx2) {
             var data = element.value as Map;
 
@@ -219,5 +241,44 @@ class FirebaseApiService {
     }
 
     return dataMap;
+  }
+
+  Future<List<String>>? getNextIdList(String exceptId) async {
+    Map<String, MasterPiece> dataMap = HashMap();
+
+    // Display Image URL Map
+    Map<String, List<String>> imageUrlMap = HashMap();
+
+    // Backgronud removed Image URL Map
+    Map<String, List<String>> removeImageUrlMap = HashMap();
+
+    DatabaseReference userInfo = database.ref('users');
+
+    DatabaseEvent event = await userInfo.once();
+
+    // ListResult results = await storageRef.listAll();
+
+    List<String> idList = [];
+
+    for (final child in event.snapshot.children) {
+      if(child.key != null && child.key != exceptId) {
+        bool flag = true;
+        for (var element in child.children){
+          if(element.key == "same_name"){
+            List<dynamic> nameList = element.value as List;
+            for (var id in nameList) {
+              if(id == exceptId){
+                if(child.key != null){
+                  flag = false;
+                }
+              }
+            }
+          }
+        }
+        if(flag) idList.add(child.key!);
+      }
+    }
+
+    return idList;
   }
 }

@@ -91,7 +91,11 @@ class _SettingHomeState extends State<SettingHome> {
                     })
               },
               child: const Text("제보 하기"),
-            )
+            ),
+            const SizedBox(
+              height: 15,
+            ),
+            const Text("version : 0.0.1")
           ],
         ),
       ),
