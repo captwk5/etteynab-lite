@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:the_banyette/firebase/firebase_api.dart';
-import 'package:the_banyette/studio/laful_studio.dart';
+import 'package:the_banyette/studio/etteynab_ar_studio.dart';
 
 void main() {
   runApp(const MyApp());
@@ -108,7 +108,7 @@ class Home extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => LaFulStudio(
+                    builder: (_) => EtteynabArStudio(
                       userName: searchTxt,
                       dataMap: FirebaseApiService.instance
                           .createMasterPieceInfo(searchTxt),

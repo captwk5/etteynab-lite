@@ -23,7 +23,7 @@ class _ClickViewState extends State<ClickView> {
         .resolve(const ImageConfiguration())
         .addListener(ImageStreamListener((ImageInfo info, bool _) {
       // completer.complete(info.image);
-      debugPrint("${info.image.width} ${info.image.height}");
+      // debugPrint("${info.image.width} ${info.image.height}");
       if (info.image.width < info.image.height) {
         imgHeight = (info.image.height / info.image.width) * imgWidth;
       } else if (info.image.width > info.image.height) {

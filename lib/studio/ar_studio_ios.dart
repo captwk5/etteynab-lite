@@ -25,6 +25,7 @@ class ARStudioIos extends StatefulWidget {
 
 class _PlaneDetectionState extends State<ARStudioIos> {
   late ARKitController arkitController;
+  late FToast fToast;
   bool planeToggle = true;
   String? flowerFlag;
   ARKitNode? nodeFlower;
@@ -58,8 +59,9 @@ class _PlaneDetectionState extends State<ARStudioIos> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    fToast = FToast();
+    fToast.init(context);
   }
 
   @override
@@ -112,7 +114,7 @@ class _PlaneDetectionState extends State<ARStudioIos> {
                       height: 20,
                     ),
                     Text(
-                      "평면을 향하고 카메라가 평면을 인식하도록\n디바이스를 조금 움직여 주세요.",
+                      "평면을 향하고 카메라가 평면을 인식하도록\n디바이스를 앞뒤, 좌우로 움직여 주세요.",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 15,
@@ -137,7 +139,7 @@ class _PlaneDetectionState extends State<ARStudioIos> {
                         noticeTxt1,
                         textAlign: TextAlign.center,
                         style:
-                            const TextStyle(color: Colors.black, fontSize: 17),
+                            const TextStyle(color: Colors.white, fontSize: 17),
                       ),
                     ),
                   ],
@@ -159,7 +161,7 @@ class _PlaneDetectionState extends State<ARStudioIos> {
                           ),
                           // color: Colors.white,
                           label: const Text(
-                            "조금 더 앞으로",
+                            "앞으로",
                             style: TextStyle(color: Colors.black),
                           ),
                           style: ElevatedButton.styleFrom(
@@ -176,7 +178,7 @@ class _PlaneDetectionState extends State<ARStudioIos> {
                               backgroundColor: Colors.greenAccent),
                           child: const Row(children: [
                             Text(
-                              "조금 더 나한테",
+                              "가까이",
                               style: TextStyle(color: Colors.black),
                             ),
                             SizedBox(
@@ -238,14 +240,7 @@ class _PlaneDetectionState extends State<ARStudioIos> {
 
   void _handleUpdateAnchor(ARKitAnchor anchor) {
     if (!planeDetected) {
-      Fluttertoast.showToast(
-          msg: "터치해서 상품을 올려보세요.",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 1,
-          // backgroundColor: Colors.red,
-          // textColor: Colors.white,
-          fontSize: 10.0);
+      showCustomToast("터치해서 상품을 올려보세요.", Colors.white, Colors.blue);
       setState(() {
         positioned = 10000;
         txtColor = Colors.transparent;
@@ -406,58 +401,65 @@ class _PlaneDetectionState extends State<ARStudioIos> {
 
   void onNodeHitHandler(List<ARKitTestResult> hits) {
     try {
-      if (hits.isNotEmpty && planeDetected) {
-        if (!detectedFlag) {
-          detectedFlag = true;
-          Fluttertoast.showToast(
-              msg: "Detected!!",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.CENTER,
-              timeInSecForIosWeb: 1,
-              // backgroundColor: Colors.red,
-              // textColor: Colors.white,
-              fontSize: 10.0);
+      if (hits.isNotEmpty && planeDetected && !detectedFlag) {
+        detectedFlag = true;
+        showCustomToast("화면에 나타난 상품 위치를 조정해 보세요.", Colors.white, Colors.green);
 
-          math.Vector3 detectedPose = math.Vector3(
-              hits[0].worldTransform.getColumn(3).x,
-              hits[0].worldTransform.getColumn(3).y,
-              hits[0].worldTransform.getColumn(3).z);
+        math.Vector3 detectedPose = math.Vector3(
+            hits[0].worldTransform.getColumn(3).x,
+            hits[0].worldTransform.getColumn(3).y,
+            hits[0].worldTransform.getColumn(3).z);
 
-          currentCoord = detectedPose;
+        currentCoord = detectedPose;
 
-          nodeFlower = ARKitNode(
-            geometry: ARKitPlane(
-              width: widget.width! * 0.01,
-              height: widget.height! * 0.01,
-              materials: [
-                ARKitMaterial(
-                    // transparency: 1.0,
-                    diffuse: ARKitMaterialProperty.image(widget.imageUrl))
-              ],
-            ),
-            position: detectedPose,
-            // rotation: vector.Vector4(1, 0, 0, -math.pi / 2),
-          );
+        nodeFlower = ARKitNode(
+          geometry: ARKitPlane(
+            width: widget.width! * 0.01,
+            height: widget.height! * 0.01,
+            materials: [
+              ARKitMaterial(
+                  // transparency: 1.0,
+                  diffuse: ARKitMaterialProperty.image(widget.imageUrl))
+            ],
+          ),
+          position: detectedPose,
+          // rotation: vector.Vector4(1, 0, 0, -math.pi / 2),
+        );
 
-          if (flowerFlag != null) {
-            arkitController.remove(flowerFlag!);
-          }
-          arkitController.add(nodeFlower!);
-          flowerFlag = nodeFlower?.name;
+        if (flowerFlag != null) {
+          arkitController.remove(flowerFlag!);
         }
+        arkitController.add(nodeFlower!);
+        flowerFlag = nodeFlower?.name;
       } else {
-        Fluttertoast.showToast(
-            msg: "다시 터치해 주세요.",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.CENTER,
-            timeInSecForIosWeb: 1,
-            // backgroundColor: Colors.red,
-            // textColor: Colors.white,
-            fontSize: 10.0);
+        showCustomToast("다시 터치해 주세요.", Colors.white, Colors.red);
       }
     } catch (e) {
       debugPrint("rowan Something wrong! ${e.toString()}");
     }
+  }
+
+  void showCustomToast(String msg, Color c, Color b) {
+    Widget toast = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25.0),
+        color: b.withOpacity(0.5),
+      ),
+      child: Text(
+        msg,
+        style: TextStyle(
+          color: c,
+          fontSize: 15,
+        ),
+      ),
+    );
+
+    fToast.showToast(
+      child: toast,
+      gravity: ToastGravity.CENTER,
+      toastDuration: const Duration(seconds: 2),
+    );
   }
 
 // void _addPlane(ARKitController controller, ARKitPlaneAnchor anchor) {

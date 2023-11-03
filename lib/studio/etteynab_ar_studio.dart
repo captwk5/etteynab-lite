@@ -12,8 +12,8 @@ import 'package:the_banyette/view/setting_home.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // ignore: must_be_immutable
-class LaFulStudio extends StatefulWidget {
-  LaFulStudio({
+class EtteynabArStudio extends StatefulWidget {
+  EtteynabArStudio({
     super.key,
     required this.userName,
     required this.dataMap,
@@ -40,10 +40,10 @@ class LaFulStudio extends StatefulWidget {
   Future<Map<String, MasterPiece>>? noDataMap;
 
   @override
-  State<LaFulStudio> createState() => LaFulStudioProducts();
+  State<EtteynabArStudio> createState() => EtteynabArStudioProducts();
 }
 
-class LaFulStudioProducts extends State<LaFulStudio> {
+class EtteynabArStudioProducts extends State<EtteynabArStudio> {
   String currentDescription = "";
   Future<bool>? moveSimilarItem;
 
@@ -62,7 +62,7 @@ class LaFulStudioProducts extends State<LaFulStudio> {
   void refreshDescription(String desc) {
     Future.delayed(Duration.zero, () {
       setState(() {
-        debugPrint("$desc");
+        // debugPrint("$desc");
         var descList = desc.split(",");
         currentDescription = "\n"
             "- 상품명 : ${descList.first}"
@@ -374,7 +374,7 @@ class LaFulStudioProducts extends State<LaFulStudio> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => LaFulStudio(
+        builder: (_) => EtteynabArStudio(
           userName: id,
           dataMap: FirebaseApiService.instance.createMasterPieceInfo(id),
           noDataMap: FirebaseApiService.instance.getRandomMasterPieceInfo(),
