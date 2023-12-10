@@ -68,13 +68,13 @@ class FirebaseApiService {
 
     // prefs.clear();
 
-    for (final child in event.snapshot.children){
-      for (var element in child.children){
-        if(element.key == "same_name"){
+    for (final child in event.snapshot.children) {
+      for (var element in child.children) {
+        if (element.key == "same_name") {
           List<dynamic> nameList = element.value as List;
           for (var id in nameList) {
-            if(id == userId){
-              if(child.key != null){
+            if (id == userId) {
+              if (child.key != null) {
                 // debugPrint("rowan $id ${child.key}");
                 userId = child.key!;
                 break;
@@ -87,13 +87,13 @@ class FirebaseApiService {
     }
 
     for (final child in event.snapshot.children) {
-      var key = child.key;
+      var key = child.key; // userId
 
-      debugPrint("key : $key");
+      // debugPrint("rowanDebug key : $key");
       List<String> prefList = [];
       if (key == userId) {
         for (var element in child.children) {
-          if(element.key == "same_name") continue;
+          if (element.key == "same_name") continue; // product name
 
           var data = element.value as Map;
 
@@ -110,8 +110,7 @@ class FirebaseApiService {
                 String imageUrl = await instance.storageRef
                     .child(element.name)
                     .getDownloadURL();
-                debugPrint(imageUrl);
-                debugPrint("id : ${element.name}");
+                debugPrint("id is added : ${element.name} $imageUrl");
                 prefList.add("${element.name},$imageUrl");
 
                 if (imageUrlMap[id] == null) {
@@ -131,27 +130,88 @@ class FirebaseApiService {
             }
             prefs.setStringList(userId + id, prefList);
           } else {
+            debugPrint("$id list : ${prefs.getStringList(userId + id)}");
             prefs.getStringList(userId + id)?.forEach((url) {
-              var element = url.split(',').first;
-              var imageUrl = url.split(',').last;
-
-              debugPrint("$element == $imageUrl");
-              if (element.contains(id)) {
-                if (imageUrlMap[id] == null) {
-                  imageUrlMap[id] = [];
-                }
-
-                if (removeImageUrlMap[id] == null) {
-                  removeImageUrlMap[id] = [];
-                }
-
-                if (!element.split('_').last.contains('r')) {
-                  imageUrlMap[id]?.add(imageUrl);
-                } else {
-                  removeImageUrlMap[id]?.add(imageUrl);
+              var imageId = url.split(',').first;
+              bool checkFlag = false;
+              for (var element in results.items) {
+                if (imageId == element.name) {
+                  checkFlag = true;
+                  // debugPrint("rowanDebug ${imageId} is checked!");
+                  break;
                 }
               }
+              if (checkFlag) {
+                var imageUrl = url.split(',').last;
+
+                debugPrint("$imageId is exist $imageUrl");
+                if (imageId.contains(id)) {
+                  if (imageUrlMap[id] == null) {
+                    imageUrlMap[id] = [];
+                  }
+
+                  if (removeImageUrlMap[id] == null) {
+                    removeImageUrlMap[id] = [];
+                  }
+
+                  if (!imageId.split('_').last.contains('r')) {
+                    imageUrlMap[id]?.add(imageUrl);
+                  } else {
+                    removeImageUrlMap[id]?.add(imageUrl);
+                  }
+                }
+              } else {
+                debugPrint("$imageId is gone");
+                List<String> prefList = prefs.getStringList(userId + id)!;
+                List<int> removeIdx = [];
+                int idx = 0;
+                for (var element in prefList) {
+                  if (element.contains(imageId)) removeIdx.add(idx);
+                  idx++;
+                }
+                for (var element in removeIdx.reversed) {
+                  prefList.removeAt(element);
+                }
+                prefs.setStringList(userId + id, prefList);
+              }
             });
+
+            for (var element in results.items) {
+              if (element.name.contains(id)) {
+                bool checkFlag = false;
+                prefs.getStringList(userId + id)?.forEach((url) {
+                  var imageId = url.split(',').first;
+                  if (element.name == imageId) {
+                    checkFlag = true;
+                  }
+                });
+
+                if (!checkFlag) {
+                  String imageUrl = await instance.storageRef
+                      .child(element.name)
+                      .getDownloadURL();
+                  debugPrint(
+                      "$id is second added : ${element.name} $imageUrl ${prefs.getStringList(userId + id)}");
+                  List<String> prefList = prefs.getStringList(userId + id)!;
+                  prefList.add("${element.name},$imageUrl");
+                  prefs.setStringList(userId + id, prefList);
+
+                  if (imageUrlMap[id] == null) {
+                    imageUrlMap[id] = [];
+                  }
+
+                  if (removeImageUrlMap[id] == null) {
+                    removeImageUrlMap[id] = [];
+                  }
+
+                  if (!element.name.split('_').last.contains('r')) {
+                    imageUrlMap[id]?.add(imageUrl);
+                  } else {
+                    removeImageUrlMap[id]?.add(imageUrl);
+                  }
+                }
+              }
+            }
           }
 
           dataMap[id] = MasterPiece(
@@ -193,11 +253,11 @@ class FirebaseApiService {
     for (final child in event.snapshot.children) {
       if (checkIdx1 == randomIdx1) {
         var key = child.key;
-        var randomIdx2 =
-            Random().nextInt(child.children.length - 1); // Value is >= 0 and < 10.
+        var randomIdx2 = Random()
+            .nextInt(child.children.length - 1); // Value is >= 0 and < 10.
         int checkIdx2 = 0;
         for (var element in child.children) {
-          if(element.key == "same_name") continue;
+          if (element.key == "same_name") continue;
           if (checkIdx2 == randomIdx2) {
             var data = element.value as Map;
 
@@ -261,21 +321,21 @@ class FirebaseApiService {
     List<String> idList = [];
 
     for (final child in event.snapshot.children) {
-      if(child.key != null && child.key != exceptId) {
+      if (child.key != null && child.key != exceptId) {
         bool flag = true;
-        for (var element in child.children){
-          if(element.key == "same_name"){
+        for (var element in child.children) {
+          if (element.key == "same_name") {
             List<dynamic> nameList = element.value as List;
             for (var id in nameList) {
-              if(id == exceptId){
-                if(child.key != null){
+              if (id == exceptId) {
+                if (child.key != null) {
                   flag = false;
                 }
               }
             }
           }
         }
-        if(flag) idList.add(child.key!);
+        if (flag) idList.add(child.key!);
       }
     }
 

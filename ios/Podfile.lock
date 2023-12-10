@@ -24,6 +24,7 @@ PODS:
     - nanopb (< 2.30910.0, >= 2.30908.0)
   - arkit_plugin (0.0.1):
     - Flutter
+    - GLTFSceneKit
   - BlueCryptor (1.0.32)
   - BlueECC (1.2.5)
   - BlueRSA (1.0.200)
@@ -220,7 +221,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   ar_flutter_plugin: 8e0c6026776a842d3deea2cf8da5d2a4ed8b2376
   ARCore: 3124ed997ad2554a24d5fdbeb40f76265dea8d69
-  arkit_plugin: 3e42571e8be84adabb8a178bd51c22fa981e16bd
+  arkit_plugin: bb56e71ef215147316ecf3774d5cb74beda20a10
   BlueCryptor: b0aee3d9b8f367b49b30de11cda90e1735571c24
   BlueECC: 0d18e93347d3ec6d41416de21c1ffa4d4cd3c2cc
   BlueRSA: dfeef51db96bcc4edec654956c1581adbda4e6a3
@@ -259,7 +260,7 @@ SPEC CHECKSUMS:
   shared_preferences_foundation: 5b919d13b803cadd15ed2dc053125c68730e5126
   SwiftJWT: 88c412708f58c169d431d344c87bc79a87c830ae
   Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
-  url_launcher_ios: 08a3dfac5fb39e8759aeb0abbd5d9480f30fc8b4
+  url_launcher_ios: 68d46cc9766d0c41dbdc884310529557e3cd7a86
 
 PODFILE CHECKSUM: 871c46b1e85546e923aa79a16f3b282bcea014a2
 

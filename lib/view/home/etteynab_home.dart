@@ -6,10 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:the_banyette/firebase/firebase_api.dart';
 import 'package:the_banyette/model/masterpiece.dart';
-import 'package:the_banyette/studio/ar_studio_android.dart';
-import 'package:the_banyette/studio/ar_studio_ios.dart';
-import 'package:the_banyette/view/setting_home.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:the_banyette/view/studio/ar_studio_android.dart';
+import 'package:the_banyette/view/studio/ar_studio_ios.dart';
+import 'package:the_banyette/view/home/setting_home.dart';
 
 // ignore: must_be_immutable
 class EtteynabArStudio extends StatefulWidget {
@@ -20,20 +19,15 @@ class EtteynabArStudio extends StatefulWidget {
     required this.noDataMap,
   });
 
-  final String userName;
+  String userName;
 
-  List<MasterPiece> removedBgDatas = [];
   List<MasterPiece> pageDatas = [];
   int? pageCnt;
   int? selectedSubItemIdx;
 
-  bool arFlag = false;
   bool noDataFlag = false;
-  int? removeIdx;
 
   PageController pageController = PageController(initialPage: 0);
-
-  // int selectedNavTapIdx = 1;
 
   Future<Map<String, MasterPiece>>? dataMap;
 
@@ -46,18 +40,7 @@ class EtteynabArStudio extends StatefulWidget {
 class EtteynabArStudioProducts extends State<EtteynabArStudio> {
   String currentDescription = "";
   Future<bool>? moveSimilarItem;
-
-  void removeCallbackStatus() {
-    // setState(() {
-    // int currentPage = widget.pageController.page!.toInt();
-    // var selectedIdx = widget.pageDatas[currentPage].selectedItemIndex;
-    // var selectedImageNum = widget.pageDatas[currentPage].imageUrl[selectedIdx]
-    //     .split('.jpeg')[0]
-    //     .split('_')[1];
-    // debugPrint("selectedIdx : $selectedIdx");
-    // debugPrint("selectedImageNum : $selectedImageNum");
-    // });
-  }
+  int nextCnt = 0;
 
   void refreshDescription(String desc) {
     Future.delayed(Duration.zero, () {
@@ -91,8 +74,8 @@ class EtteynabArStudioProducts extends State<EtteynabArStudio> {
       appBar: AppBar(
         title: Text(
           "\"${widget.userName}\"님의 상품",
-          style: TextStyle(
-            color: Theme.of(context).cardColor,
+          style: const TextStyle(
+            color: Colors.white,
             fontSize: 16,
           ),
         ),
@@ -137,8 +120,7 @@ class EtteynabArStudioProducts extends State<EtteynabArStudio> {
                       child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
-                                "\"${widget.userName}\"님 상품이 없습니다."),
+                            Text("\"${widget.userName}\"님 상품이 없습니다."),
                             const Text("판매자 이름을 확인하세요."),
                             const SizedBox(
                               height: 15,
@@ -188,7 +170,6 @@ class EtteynabArStudioProducts extends State<EtteynabArStudio> {
                   widget.noDataFlag = false;
                   moveSimilarItem = Future.value(false);
                   widget.pageDatas.clear();
-                  widget.removedBgDatas.clear();
 
                   var keyArr = snapshot.data?.keys;
                   if (keyArr != null) {
@@ -212,7 +193,6 @@ class EtteynabArStudioProducts extends State<EtteynabArStudio> {
                       itemBuilder: (context, index) {
                         var ret = widget.pageDatas[index];
 
-                        // ret.removeCallback = removeCallbackStatus;
                         ret.descriptionCallback = refreshDescription;
 
                         return ret;
@@ -244,11 +224,11 @@ class EtteynabArStudioProducts extends State<EtteynabArStudio> {
                   ),
                 )
               : Container(),
-          Padding(
-            padding: const EdgeInsets.only(left: 5, right: 5, top: 10),
-            child: Stack(
-              children: [
-                Container(
+          Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 5, right: 5, top: 10),
+                child: Container(
                   decoration: BoxDecoration(
                     border: Border.all(color: Theme.of(context).cardColor),
                     borderRadius: const BorderRadius.only(
@@ -258,7 +238,7 @@ class EtteynabArStudioProducts extends State<EtteynabArStudio> {
                   ),
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height * 0.25,
+                    height: MediaQuery.of(context).size.height * 0.2,
                     child: SingleChildScrollView(
                       // padding: EdgeInsets.all(15.0),
                       scrollDirection: Axis.vertical,
@@ -267,11 +247,12 @@ class EtteynabArStudioProducts extends State<EtteynabArStudio> {
                         child: Column(
                           children: [
                             const Text(
-                              "\n< 상세 스펙 >",
+                              "\n< 제품 스펙 >",
                               style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 15,
-                                  fontStyle: FontStyle.normal),
+                                color: Colors.black,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                             Text(
                               currentDescription,
@@ -283,65 +264,92 @@ class EtteynabArStudioProducts extends State<EtteynabArStudio> {
                     ),
                   ),
                 ),
-                Align(
-                  alignment: AlignmentDirectional.bottomEnd,
-                  child: Column(
-                    children: [
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      SizedBox.fromSize(
-                        size: const Size(65, 65), // button width and height
-                        child: ClipOval(
-                          child: Material(
-                            color: Colors.greenAccent, // button color
-                            child: InkWell(
-                              splashColor: Colors.green, // splash color
-                              onTap: () {
-                                navigateBottomTap(1);
-                              }, // button pressed
-                              child: const Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Icon(Icons.video_camera_back_outlined),
-                                  // icon
-                                  Text("AR"),
-                                  // text
-                                ],
+              ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Align(
+                  alignment: Alignment.bottomRight,
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.only(left: 15, right: 15, bottom: 15),
+                    child: Column(
+                      // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // const SizedBox(
+                        //   height: 10,
+                        // ),
+                        SizedBox.fromSize(
+                          size: const Size(60, 60), // button width and height
+                          child: ClipOval(
+                            child: Material(
+                              color: Colors.green, // button color
+                              child: InkWell(
+                                splashColor: Colors.green, // splash color
+                                onTap: () {
+                                  navigateBottomTap(1);
+                                }, // button pressed
+                                child: const Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Icon(
+                                      Icons.video_camera_back_outlined,
+                                      color: Colors.white,
+                                    ),
+                                    // icon
+                                    Text(
+                                      "AR",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    // text
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      SizedBox.fromSize(
-                        size: const Size(65, 65), // button width and height
-                        child: ClipOval(
-                          child: Material(
-                            color: Colors.greenAccent, // button color
-                            child: InkWell(
-                              splashColor: Colors.green, // splash color
-                              onTap: () {
-                                navigateBottomTap(2);
-                              }, // button pressed
-                              child: const Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Icon(Icons.next_plan_outlined), // icon
-                                  Text("Next"), // text
-                                ],
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        SizedBox.fromSize(
+                          size: const Size(60, 60), // button width and height
+                          child: ClipOval(
+                            child: Material(
+                              color: Colors.green, // button color
+                              child: InkWell(
+                                splashColor: Colors.green, // splash color
+                                onTap: () {
+                                  navigateBottomTap(2);
+                                }, // button pressed
+                                child: const Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Icon(
+                                      Icons.next_plan_outlined,
+                                      color: Colors.white,
+                                    ),
+                                    // icon
+                                    Text(
+                                      "Other",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    // text
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                )
-              ],
-            ),
+                ),
+              ),
+            ],
           ),
           // BottomNavigationBar(
           //   items: const <BottomNavigationBarItem>[
@@ -370,17 +378,11 @@ class EtteynabArStudioProducts extends State<EtteynabArStudio> {
   }
 
   void refresh(String id) {
-    Navigator.pop(context);
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => EtteynabArStudio(
-          userName: id,
-          dataMap: FirebaseApiService.instance.createMasterPieceInfo(id),
-          noDataMap: FirebaseApiService.instance.getRandomMasterPieceInfo(),
-        ),
-      ),
-    );
+    setState(() {
+      widget.userName = id;
+      widget.dataMap = FirebaseApiService.instance.createMasterPieceInfo(id);
+      widget.noDataMap = FirebaseApiService.instance.getRandomMasterPieceInfo();
+    });
   }
 
   void navigateBottomTap(int idx) async {
@@ -429,7 +431,6 @@ class EtteynabArStudioProducts extends State<EtteynabArStudio> {
             break;
           }
         case 2:
-          // Navigator.pop(context, null);
           var idList =
               FirebaseApiService.instance.getNextIdList(widget.userName);
           idList
@@ -437,14 +438,5 @@ class EtteynabArStudioProducts extends State<EtteynabArStudio> {
           break;
       }
     });
-  }
-
-  Future<void> launchURLBrowser(String? storeUrl) async {
-    if (storeUrl != null) {
-      Uri url = Uri.parse(storeUrl);
-      if (!await launchUrl(url)) {
-        throw Exception('Could not launch $url');
-      }
-    }
   }
 }

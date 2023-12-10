@@ -46,6 +46,8 @@ class _PlaneDetectionState extends State<ARStudioIos> {
   bool detectedFlag = false;
   bool planeDetected = false;
 
+  double dragScale = 0.01;
+
   double distance = 0.0;
   double directionX = 0.0;
   double directionZ = 0.0;
@@ -75,7 +77,10 @@ class _PlaneDetectionState extends State<ARStudioIos> {
   Widget build(BuildContext context) => Scaffold(
         // appBar: AppBar(title: const Text('Plane Detection Sample')),
         appBar: AppBar(
-          title: const Text('ARStudio'),
+          title: const Text(
+            'ARStudio',
+            style: TextStyle(color: Colors.white),
+          ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios),
             onPressed: () {
@@ -162,10 +167,10 @@ class _PlaneDetectionState extends State<ARStudioIos> {
                           // color: Colors.white,
                           label: const Text(
                             "앞으로",
-                            style: TextStyle(color: Colors.black),
+                            style: TextStyle(color: Colors.white),
                           ),
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.greenAccent),
+                              backgroundColor: Colors.green),
                         ),
                         ElevatedButton(
                           onPressed: () {
@@ -175,11 +180,11 @@ class _PlaneDetectionState extends State<ARStudioIos> {
                           },
                           // color: Colors.white,
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.greenAccent),
+                              backgroundColor: Colors.green),
                           child: const Row(children: [
                             Text(
                               "가까이",
-                              style: TextStyle(color: Colors.black),
+                              style: TextStyle(color: Colors.white),
                             ),
                             SizedBox(
                               width: 5,
@@ -296,9 +301,9 @@ class _PlaneDetectionState extends State<ARStudioIos> {
     if (detectedFlag) {
       if (prevDy != 0.0) {
         if (drag.globalPosition.dy - prevDy < 0) {
-          currentCoord!.y += 0.005;
+          currentCoord!.y += dragScale;
         } else {
-          currentCoord!.y -= 0.005;
+          currentCoord!.y -= dragScale;
         }
       }
 
@@ -311,19 +316,19 @@ class _PlaneDetectionState extends State<ARStudioIos> {
       if (prevDx != 0.0) {
         if (directionZ < 0) {
           if (drag.globalPosition.dx - prevDx < 0) {
-            currentCoord!.x -= 0.005 * math.cos(slopeV);
-            currentCoord!.z -= 0.005 * math.sin(slopeV);
+            currentCoord!.x -= dragScale * math.cos(slopeV);
+            currentCoord!.z -= dragScale * math.sin(slopeV);
           } else {
-            currentCoord!.x += 0.005 * math.cos(slopeV);
-            currentCoord!.z += 0.005 * math.sin(slopeV);
+            currentCoord!.x += dragScale * math.cos(slopeV);
+            currentCoord!.z += dragScale * math.sin(slopeV);
           }
         } else {
           if (drag.globalPosition.dx - prevDx < 0) {
-            currentCoord!.x += 0.005 * math.cos(slopeV);
-            currentCoord!.z += 0.005 * math.sin(slopeV);
+            currentCoord!.x += dragScale * math.cos(slopeV);
+            currentCoord!.z += dragScale * math.sin(slopeV);
           } else {
-            currentCoord!.x -= 0.005 * math.cos(slopeV);
-            currentCoord!.z -= 0.005 * math.sin(slopeV);
+            currentCoord!.x -= dragScale * math.cos(slopeV);
+            currentCoord!.z -= dragScale * math.sin(slopeV);
           }
         }
       }

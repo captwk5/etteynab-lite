@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:the_banyette/firebase/firebase_api.dart';
-import 'package:the_banyette/studio/etteynab_ar_studio.dart';
+import 'package:the_banyette/view/home/etteynab_home.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,16 +11,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  String? loadGoogleFontStyle() {
-    String? fontStyle = "";
-    try {
-      fontStyle = GoogleFonts.quicksand().fontFamily;
-    } catch (e) {
-      debugPrint("network error ${e.toString()}");
-    }
-    return fontStyle;
-  }
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -29,17 +19,14 @@ class MyApp extends StatelessWidget {
 
     firebaseApiService.initialization();
 
+    final textTheme = Theme.of(context).textTheme;
+
     return MaterialApp(
       theme: ThemeData(
-        /* TODO : Use default fontStyle when network is unavailable. */
-        fontFamily: loadGoogleFontStyle(),
-        cardColor: const Color.fromARGB(255, 100, 177, 103),
-        shadowColor: const Color.fromARGB(255, 200, 235, 216),
-        textTheme: const TextTheme(
-          displaySmall: TextStyle(
-            fontSize: 15,
-            color: Colors.green,
-          ),
+        cardColor: Colors.green,
+        shadowColor: Colors.green,
+        textTheme: GoogleFonts.latoTextTheme(textTheme).copyWith(
+          bodyMedium: GoogleFonts.lato(textStyle: textTheme.bodyMedium),
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
@@ -61,68 +48,63 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return Container(
+      decoration: const BoxDecoration(
+          // image: DecorationImage(
+          //     image: AssetImage("assets/images/etteynab_home.jpg"),
+          //     fit: BoxFit.cover),
+          color: Colors.white),
+      child: Scaffold(
+        // resizeToAvoidBottomInset: false,
+        // backgroundColor: Colors.transparent,
+        body: Stack(
           children: [
-            const Text(
-              "판매자를 검색하고\nAR을 통해 상품 시뮬레이션을 해보세요",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.lightGreen,
-                fontWeight: FontWeight.bold
-              ),
-            ),
-            const SizedBox(
-              height: 30,
-            ),
-            SizedBox(
-              width: 300,
-              child: TextField(
-                controller: artistTxtIdController,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.search),
-                  border: OutlineInputBorder(),
-                  prefixIconColor: Colors.green,
-                ),
-              ),
-            ),
-            const SizedBox(
-              height: 30,
-            ),
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.all(20),
-                side: const BorderSide(color: Colors.green),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(30),
-                  ),
-                ),
-              ),
-              onPressed: () {
-                var searchTxt = artistTxtIdController.text;
-                // _navigateAndDisplaySelection(context, searchTxt);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => EtteynabArStudio(
-                      userName: searchTxt,
-                      dataMap: FirebaseApiService.instance
-                          .createMasterPieceInfo(searchTxt),
-                      noDataMap: FirebaseApiService.instance
-                          .getRandomMasterPieceInfo(),
+            const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Etteynab-lite",
+                    style: TextStyle(
+                      fontSize: 35,
+                      color: Colors.green,
                     ),
                   ),
-                );
-              },
-              child: const Text(
-                "Find Artist",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 15,
+                  SizedBox(
+                    height: 300,
+                  ),
+                ],
+              ),
+            ),
+            Center(
+              child: SizedBox(
+                width: 300,
+                child: TextField(
+                  controller: artistTxtIdController,
+                  decoration: const InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    prefixIcon: Icon(Icons.search),
+                    border: OutlineInputBorder(),
+                    prefixIconColor: Colors.green,
+                    hintText: "판매자를 검색하세요.",
+                  ),
+                  textInputAction: TextInputAction.go,
+                  onSubmitted: (value) async {
+                    var searchTxt = value;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => EtteynabArStudio(
+                          userName: searchTxt,
+                          dataMap: FirebaseApiService.instance
+                              .createMasterPieceInfo(searchTxt),
+                          noDataMap: FirebaseApiService.instance
+                              .getRandomMasterPieceInfo(),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),

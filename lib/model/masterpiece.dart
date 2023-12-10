@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:the_banyette/view/click_view.dart';
+import 'package:the_banyette/view/detail/click_detail.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // ignore: must_be_immutable
@@ -47,24 +47,26 @@ class _MasterPieceState extends State<MasterPiece> {
   @override
   Widget build(BuildContext context) {
     double deviceHeight = MediaQuery.of(context).size.height;
-    double imgHeight = deviceHeight * 0.32; // count 1
+    double imgHeight = deviceHeight * 0.34; // count 1
     double imgWidth = 0;
-    double margin = deviceHeight * 0.025; // count 3
+    double margin = deviceHeight * 0.026; // count 3
     double subImgWidthHeight = imgHeight * 0.16; // count 1
     // ratio = 0.32 + 0.02 * 3 + 0.16 = 0.54
     // widget.descriptionCallback?.call(widget.description);
-    widget.descriptionCallback?.call("${widget.title},${widget.height},${widget.width},${widget.description}");
+    widget.descriptionCallback?.call(
+        "${widget.title},${widget.height},${widget.width},${widget.description}");
 
-    Image currentImage = Image.network(widget.imageUrl[widget.selectedItemIndex]);
+    Image currentImage =
+        Image.network(widget.imageUrl[widget.selectedItemIndex]);
     currentImage.image
         .resolve(const ImageConfiguration())
         .addListener(ImageStreamListener((ImageInfo info, bool _) {
       // completer.complete(info.image);
       // debugPrint("${info.image.width} ${info.image.height}");
       setState(() {
-        if(info.image.width == info.image.height) {
+        if (info.image.width == info.image.height) {
           imgWidth = imgHeight;
-        }else{
+        } else {
           imgWidth = imgHeight * (info.image.width / info.image.height);
         }
       });
@@ -94,7 +96,8 @@ class _MasterPieceState extends State<MasterPiece> {
                         context,
                         MaterialPageRoute(
                           builder: (_) => ClickView(
-                            imageUrl: widget.imageUrl[widget.selectedItemIndex],
+                            imageUrl: widget.imageUrl,
+                            selectedIdx: widget.selectedItemIndex,
                           ),
                         ),
                       );
@@ -102,8 +105,7 @@ class _MasterPieceState extends State<MasterPiece> {
                     child: Container(
                       decoration: BoxDecoration(
                         image: DecorationImage(
-                            image: currentImage.image,
-                            fit: BoxFit.fill),
+                            image: currentImage.image, fit: BoxFit.fill),
                       ),
                       width: imgWidth,
                       height: imgHeight,
@@ -137,8 +139,8 @@ class _MasterPieceState extends State<MasterPiece> {
                         child: Container(
                           decoration: BoxDecoration(
                               image: DecorationImage(
-                                  image:
-                                      Image.network(widget.imageUrl[item]).image,
+                                  image: Image.network(widget.imageUrl[item])
+                                      .image,
                                   fit: BoxFit.fill),
                               border: Border.all(
                                   color: widget.selectedItemBorderColor,

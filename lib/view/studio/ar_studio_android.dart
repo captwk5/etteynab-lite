@@ -39,6 +39,8 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
   bool detectedFlag = false;
   bool planeDetected = false;
 
+  double dragScale = 0.005;
+
   double distance = 0.0;
   double directionX = 0.0;
   double directionZ = 0.0;
@@ -69,9 +71,9 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: Text(
+          title: const Text(
             'ARStudio',
-            style: TextStyle(color: Theme.of(context).cardColor),
+            style: TextStyle(color: Colors.white),
           ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios),
@@ -159,10 +161,10 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
                           // color: Colors.white,
                           label: const Text(
                             "앞으로",
-                            style: TextStyle(color: Colors.black),
+                            style: TextStyle(color: Colors.white),
                           ),
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.greenAccent),
+                              backgroundColor: Colors.green),
                         ),
                         ElevatedButton(
                           onPressed: () {
@@ -172,11 +174,11 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
                           },
                           // color: Colors.white,
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.greenAccent),
+                              backgroundColor: Colors.green),
                           child: const Row(children: [
                             Text(
                               "가까이",
-                              style: TextStyle(color: Colors.black),
+                              style: TextStyle(color: Colors.white),
                             ),
                             SizedBox(
                               width: 5,
@@ -278,9 +280,10 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
     // var eulerCamera = toEulerAngles(rot![0], rot![1], rot![2], rot![3]);
     // var eulerOrigin = toEulerAngles(origin!.x, origin.y, origin.z, origin.w);
     // var quat = eulerToQuaternion(euler["roll"]!, -euler["pitch"]! * 2, euler["yaw"]!);
+    debugPrint("rowan >> ${nodeFlower?.rotation} --- ${rot[1] * 180 / 3.14}");
     nodeFlower?.rotation?.value =
         // math.Vector4(quat[0], quat[1], quat[2], quat[3]);
-        math.Vector4(origin!.x, -rot[1], origin.z, origin.w);
+        math.Vector4(origin!.x, rot[1], origin.z, origin.w);
 
     arCoreController.handleRotationChanged(nodeFlower!);
     currentAngle = rot;
@@ -330,9 +333,9 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
     if (detectedFlag) {
       if (prevDy != 0.0) {
         if (drag.globalPosition.dy - prevDy < 0) {
-          currentCoord!.y += 0.005;
+          currentCoord!.y += dragScale;
         } else {
-          currentCoord!.y -= 0.005;
+          currentCoord!.y -= dragScale;
         }
       }
 
@@ -345,19 +348,19 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
       if (prevDx != 0.0) {
         if (directionZ < 0) {
           if (drag.globalPosition.dx - prevDx < 0) {
-            currentCoord!.x -= 0.005 * math.cos(slopeV);
-            currentCoord!.z -= 0.005 * math.sin(slopeV);
+            currentCoord!.x -= dragScale * math.cos(slopeV);
+            currentCoord!.z -= dragScale * math.sin(slopeV);
           } else {
-            currentCoord!.x += 0.005 * math.cos(slopeV);
-            currentCoord!.z += 0.005 * math.sin(slopeV);
+            currentCoord!.x += dragScale * math.cos(slopeV);
+            currentCoord!.z += dragScale * math.sin(slopeV);
           }
         } else {
           if (drag.globalPosition.dx - prevDx < 0) {
-            currentCoord!.x += 0.005 * math.cos(slopeV);
-            currentCoord!.z += 0.005 * math.sin(slopeV);
+            currentCoord!.x += dragScale * math.cos(slopeV);
+            currentCoord!.z += dragScale * math.sin(slopeV);
           } else {
-            currentCoord!.x -= 0.005 * math.cos(slopeV);
-            currentCoord!.z -= 0.005 * math.sin(slopeV);
+            currentCoord!.x -= dragScale * math.cos(slopeV);
+            currentCoord!.z -= dragScale * math.sin(slopeV);
           }
         }
       }
@@ -456,12 +459,12 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
         var detectedPose = hit.first.pose.translation;
         // var detectedPose = math.Vector3(0.0, 0.0, -0.5);
         var detectedRot = hit.first.pose.rotation;
+        debugPrint("rowan $detectedRot");
         currentCoord = detectedPose;
-        Uint8List bytes =
-            (await NetworkAssetBundle(Uri.parse(widget.imageUrl))
-                    .load(widget.imageUrl))
-                .buffer
-                .asUint8List();
+        Uint8List bytes = (await NetworkAssetBundle(Uri.parse(widget.imageUrl))
+                .load(widget.imageUrl))
+            .buffer
+            .asUint8List();
 
         nodeFlower = ArCoreNode(
             image: ArCoreImage(
@@ -469,9 +472,10 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
                 width: (widget.width! * 10.0).toInt(),
                 height: (widget.height! * 10.0).toInt()),
             position: detectedPose + math.Vector3(0.0, 0.0, 0.0),
-            rotation: detectedRot + math.Vector4(0.0, 0.0, 0.0, 0.0),
+            rotation: math.Vector4(0.0, 0.0, 0.0, 0.0),
             scale: math.Vector3(0.5, 0.5, 0.5),
             name: "flower");
+        debugPrint("rowan >> ${nodeFlower?.rotation}");
 
         arCoreController.addArCoreNode(nodeFlower!);
       } else {

@@ -77,7 +77,8 @@ class _SettingHomeState extends State<SettingHome> {
                                 ),
                                 ElevatedButton(
                                   onPressed: () => {
-                                    FirebaseApiService.instance.reportMessage(myController.text),
+                                    FirebaseApiService.instance
+                                        .reportMessage(myController.text),
                                     myController.text = "",
                                     Navigator.pop(context)
                                   },
