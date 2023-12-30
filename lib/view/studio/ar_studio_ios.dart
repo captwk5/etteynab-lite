@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:arkit_plugin/arkit_plugin.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -268,8 +266,8 @@ class _PlaneDetectionState extends State<ARStudioIos> {
   }
 
   void rotate(math.Vector3 value) {
-    nodeFlower?.eulerAngles = math.Vector3(value.y, 0, 0);
-    currentAngle = value;
+    // nodeFlower?.eulerAngles = math.Vector3(value.y, 0, 0);
+    // currentAngle = value;
     if (currentCoord != null) nodeFlower?.position = currentCoord!;
   }
 

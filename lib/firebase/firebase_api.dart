@@ -304,14 +304,6 @@ class FirebaseApiService {
   }
 
   Future<List<String>>? getNextIdList(String exceptId) async {
-    Map<String, MasterPiece> dataMap = HashMap();
-
-    // Display Image URL Map
-    Map<String, List<String>> imageUrlMap = HashMap();
-
-    // Backgronud removed Image URL Map
-    Map<String, List<String>> removeImageUrlMap = HashMap();
-
     DatabaseReference userInfo = database.ref('users');
 
     DatabaseEvent event = await userInfo.once();

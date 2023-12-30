@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:arcore_flutter_plugin/arcore_flutter_plugin.dart';
 import 'package:flutter/services.dart';
@@ -253,7 +251,7 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
   }
 
   void rotate(dynamic value) {
-    var rot = value["rotation"]; // translation & rotation
+    // var rot = value["rotation"]; // translation & rotation
     cameraCoord = value["translation"];
     if (currentCoord != null) {
       distance = math.sqrt(math.pow(currentCoord!.x - cameraCoord![0], 2) +
@@ -276,17 +274,17 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
       }
     }
 
-    var origin = nodeFlower?.rotation?.value;
-    // var eulerCamera = toEulerAngles(rot![0], rot![1], rot![2], rot![3]);
-    // var eulerOrigin = toEulerAngles(origin!.x, origin.y, origin.z, origin.w);
-    // var quat = eulerToQuaternion(euler["roll"]!, -euler["pitch"]! * 2, euler["yaw"]!);
-    debugPrint("rowan >> ${nodeFlower?.rotation} --- ${rot[1] * 180 / 3.14}");
-    nodeFlower?.rotation?.value =
-        // math.Vector4(quat[0], quat[1], quat[2], quat[3]);
-        math.Vector4(origin!.x, rot[1], origin.z, origin.w);
-
-    arCoreController.handleRotationChanged(nodeFlower!);
-    currentAngle = rot;
+    // var origin = nodeFlower?.rotation?.value;
+    // // var eulerCamera = toEulerAngles(rot![0], rot![1], rot![2], rot![3]);
+    // // var eulerOrigin = toEulerAngles(origin!.x, origin.y, origin.z, origin.w);
+    // // var quat = eulerToQuaternion(euler["roll"]!, -euler["pitch"]! * 2, euler["yaw"]!);
+    // debugPrint("rowan >> ${nodeFlower?.rotation} --- ${rot[1] * 180 / 3.14}");
+    // nodeFlower?.rotation?.value =
+    //     // math.Vector4(quat[0], quat[1], quat[2], quat[3]);
+    //     math.Vector4(origin!.x, rot[1], origin.z, origin.w);
+    //
+    // arCoreController.handleRotationChanged(nodeFlower!);
+    // currentAngle = rot;
     // debugPrint("rowan ${eulerCamera["pitch"]! * 180 / math.pi}");
 
     if (currentCoord != null) {
@@ -299,16 +297,16 @@ class _PlaneDetectionState extends State<ARStudioAndroid> {
   Map<String, double> toEulerAngles(double x, double y, double z, double w) {
     double t0 = 2.0 * (w * x + y * z);
     double t1 = 1.0 - 2.0 * (x * x + y * y);
-    double roll = atan2(t0, t1);
+    double roll = math.atan2(t0, t1);
 
     double t2 = 2.0 * (w * y - z * x);
     t2 = t2 > 1.0 ? 1.0 : t2;
     t2 = t2 < -1.0 ? -1.0 : t2;
-    double pitch = asin(t2);
+    double pitch = math.asin(t2);
 
     double t3 = 2.0 * (w * z + x * y);
     double t4 = 1.0 - 2.0 * (y * y + z * z);
-    double yaw = atan2(t3, t4);
+    double yaw = math.atan2(t3, t4);
 
     return {'roll': roll, 'pitch': pitch, 'yaw': yaw};
   }
